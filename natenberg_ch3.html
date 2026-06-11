@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.3 — Theoretical Pricing Models</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: #2a3441;
+    --accent: #58c4a0;
+    --accent2: #f0a050;
+    --accent3: #e06c75;
+    --accent4: #79b8ff;
+    --accent5: #c678dd;
+    --text: #cdd9e5;
+    --text-dim: #768390;
+    --text-bright: #f0f6fc;
+    --tag-bg: #1a2f26;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 24px 24px;
+  }
+
+  .book-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .chapter-tag { display: inline-block; background: var(--tag-bg); color: var(--accent); font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 3px; border: 1px solid rgba(88,196,160,0.3); margin-bottom: 12px; }
+  .chapter-title { font-size: 22px; font-weight: 600; color: var(--text-bright); line-height: 1.3; margin-bottom: 8px; }
+  .chapter-subtitle { font-size: 13px; color: var(--text-dim); }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .tldr { background: #0e1f18; border: 1px solid rgba(88,196,160,0.4); border-left: 3px solid var(--accent); border-radius: 6px; padding: 16px 18px; margin-bottom: 28px; }
+  .tldr-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  .tldr p { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  .section { margin-bottom: 32px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .section-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); background: var(--tag-bg); border: 1px solid rgba(88,196,160,0.25); padding: 2px 7px; border-radius: 3px; }
+  .section-title { font-size: 14px; font-weight: 600; color: var(--text-bright); letter-spacing: 0.3px; }
+
+  .body-text { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
+
+  /* 5-step model diagram */
+  .steps { display: flex; flex-direction: column; gap: 0; margin-bottom: 16px; }
+  .step { display: flex; gap: 12px; align-items: flex-start; position: relative; }
+  .step + .step::before { content: ''; position: absolute; left: 16px; top: -14px; height: 14px; width: 2px; background: var(--border); }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--tag-bg); border: 1px solid rgba(88,196,160,0.4); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .step-content { padding: 4px 0 16px; }
+  .step-title { font-size: 13px; font-weight: 600; color: var(--text-bright); margin-bottom: 3px; }
+  .step-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* BS inputs diagram */
+  .bs-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .bs-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 16px; }
+  .bs-flow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: center; }
+  .bs-inputs { display: flex; flex-direction: column; gap: 6px; }
+  .bs-input-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 7px 12px; font-size: 12px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .bs-input-item.vol { border-color: rgba(224,108,117,0.5); }
+  .bs-input-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .bs-input-dot.vol { background: var(--accent3); }
+  .bs-arrow { display: flex; flex-direction: column; align-items: center; padding: 0 16px; gap: 4px; }
+  .bs-arrow-line { width: 40px; height: 2px; background: var(--border); position: relative; }
+  .bs-arrow-line::after { content: '▶'; position: absolute; right: -8px; top: -7px; color: var(--accent); font-size: 12px; }
+  .bs-box { background: rgba(88,196,160,0.1); border: 1px solid rgba(88,196,160,0.4); border-radius: 6px; padding: 12px 16px; text-align: center; }
+  .bs-box-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 4px; }
+  .bs-box-model { font-size: 13px; font-weight: 600; color: var(--text-bright); margin-bottom: 8px; }
+  .bs-arrow2 { display: flex; align-items: center; padding: 0 16px; }
+  .bs-arrow2-line { width: 40px; height: 2px; background: var(--border); position: relative; }
+  .bs-arrow2-line::after { content: '▶'; position: absolute; right: -8px; top: -7px; color: var(--accent2); font-size: 12px; }
+  .bs-output { background: rgba(240,160,80,0.1); border: 1px solid rgba(240,160,80,0.4); border-radius: 6px; padding: 12px 16px; text-align: center; }
+  .bs-output-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent2); margin-bottom: 4px; }
+  .bs-output-val { font-size: 16px; font-weight: 600; color: var(--accent2); }
+
+  /* Input effects table */
+  .effect-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .effect-table th { background: var(--surface2); color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.5px; padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+  .effect-table td { padding: 8px 10px; border: 1px solid var(--border); color: var(--text); vertical-align: middle; background: var(--surface); line-height: 1.4; font-size: 12px; }
+  .effect-table tr:hover td { background: var(--surface2); }
+  .up { color: var(--accent); font-weight: 600; }
+  .down { color: var(--accent3); font-weight: 600; }
+  .neutral { color: var(--text-dim); }
+  .highlight-row td { background: rgba(224,108,117,0.08) !important; }
+
+  /* Quote box */
+  .quote { background: var(--surface2); border-left: 3px solid var(--accent5); border-radius: 0 6px 6px 0; padding: 14px 16px; margin-bottom: 16px; font-style: italic; }
+  .quote p { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .quote-source { font-size: 11px; color: var(--text-dim); margin-top: 6px; font-style: normal; font-family: 'IBM Plex Mono', monospace; }
+
+  /* Probability distribution visual */
+  .prob-visual { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 14px; }
+  .prob-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); margin-bottom: 12px; letter-spacing: 1px; }
+
+  /* Concept cards 2x2 */
+  .concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 480px) { .concept-grid { grid-template-columns: 1fr; } .bs-flow { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .card-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: var(--accent); margin-bottom: 5px; }
+  .card p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  /* Note boxes */
+  .note { background: #1a1e2a; border: 1px solid rgba(240,160,80,0.3); border-left: 3px solid var(--accent2); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .note-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent2); margin-bottom: 6px; }
+  .note p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .warning { background: #1f1316; border: 1px solid rgba(224,108,117,0.3); border-left: 3px solid var(--accent3); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .warning-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent3); margin-bottom: 6px; }
+  .warning p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  /* Insight box (purple) */
+  .insight { background: #1a1525; border: 1px solid rgba(198,120,221,0.3); border-left: 3px solid var(--accent5); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .insight-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent5); margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .practical { background: #0d1a24; border: 1px solid rgba(88,196,160,0.2); border-radius: 6px; padding: 16px; margin-top: 14px; }
+  .practical-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 10px; }
+  .practical p { font-size: 13px; color: var(--text); line-height: 1.65; }
+  .practical p + p { margin-top: 8px; }
+
+  .checklist { list-style: none; margin-top: 10px; }
+  .checklist li { font-size: 13px; color: var(--text); padding: 6px 0 6px 22px; position: relative; line-height: 1.5; border-bottom: 1px solid var(--border); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
+
+  strong { color: var(--text-bright); font-weight: 500; }
+  .em-green { color: var(--accent); font-weight: 500; }
+  .em-orange { color: var(--accent2); font-weight: 500; }
+  .em-red { color: var(--accent3); font-weight: 500; }
+  .em-blue { color: var(--accent4); font-weight: 500; }
+  .em-purple { color: var(--accent5); font-weight: 500; }
+
+  .formula { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin: 10px 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--accent); text-align: center; }
+  .formula .comment { font-size: 11px; color: var(--text-dim); margin-top: 4px; font-family: 'IBM Plex Sans Thai', sans-serif; }
+
+  .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 14px; }
+  .nav-btn.active { color: var(--accent); border-color: rgba(88,196,160,0.4); }
+  .page-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="book-label">Natenberg · Option Volatility & Pricing · 1994</div>
+  <div class="chapter-tag">CHAPTER 03</div>
+  <div class="chapter-title">Introduction to Theoretical Pricing Models</div>
+  <div class="chapter-subtitle">สรุปเนื้อหา · Black-Scholes ทำงานอย่างไร และ input แต่ละตัวส่งผลอะไร</div>
+</div>
+
+<div class="container">
+
+  <!-- TL;DR -->
+  <div class="tldr">
+    <div class="tldr-label">TL;DR</div>
+    <p>บทนี้อธิบาย <strong>ทำไม</strong> เราถึงต้องการ pricing model และ <strong>อย่างไร</strong> ที่ Black-Scholes คำนวณ Theoretical Value จาก 5 inputs หลัก (Strike, Time, Underlying Price, Interest Rate, Volatility) — และที่สำคัญ: <strong>Volatility</strong> คือ input เดียวที่ไม่สามารถ observe ได้โดยตรง ทำให้มันเป็นหัวใจของ options trading</p>
+  </div>
+
+  <!-- Section 1: Why We Need Speed -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">ทำไม Options Trading ต้องการ Pricing Model?</span>
+    </div>
+
+    <p class="body-text">Natenberg เริ่มด้วยข้อสังเกตสำคัญ: <strong>นักเทรด futures สนใจแค่ทิศทาง</strong> — ถ้าถูก ก็กำไร แต่ <strong>นักเทรด options ต้องถูกทั้งทิศทาง และ speed</strong> ของตลาด</p>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Futures Trader</div>
+        <p>ถ้าเชื่อว่าราคาขึ้น → ซื้อ → ถูก = กำไร ง่ายๆ ไม่สนใจ speed</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Options Trader</div>
+        <p>ถ้าเชื่อว่าราคาขึ้น → ซื้อ call → ต้องถูกทั้ง <strong>ทิศทาง</strong> และ <strong>ราคาขึ้นเร็วพอก่อน expiry</strong></p>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ สาเหตุหลักที่ speculator ขาดทุนใน options</div>
+      <p>ซื้อ call เพราะมั่นใจว่าหุ้นขึ้น — หุ้นขึ้นจริง แต่ขึ้นช้าเกินไป time value decay เร็วกว่า intrinsic value ที่เพิ่มขึ้น ผลลัพธ์คือ option มีมูลค่าน้อยลงทั้งที่หุ้นขึ้น</p>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 Key Insight จาก Natenberg</div>
+      <p>ถ้าคุณเก่งแค่ predict ทิศทาง — <em class="em-purple">เทรด futures หรือหุ้นตรงๆ ดีกว่า</em> options จะเหมาะเมื่อคุณมีความสามารถ predict <strong>speed / volatility</strong> ของตลาดด้วย</p>
+    </div>
+  </div>
+
+  <!-- Section 2: Expected Return & Theoretical Value -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Expected Return → Theoretical Value · หัวใจของ Pricing</span>
+    </div>
+
+    <p class="body-text">Natenberg ใช้ตัวอย่างลูกเต๋า 6 หน้า เพื่ออธิบาย concept ที่เป็นรากฐาน:</p>
+
+    <div class="formula">
+      Expected Return = Σ (Probability × Outcome)
+      <div class="comment">ค่าเฉลี่ยถ่วงน้ำหนักของทุก outcome ที่เป็นไปได้</div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ตัวอย่างลูกเต๋า</div>
+      <p>ลูกเต๋า 6 หน้า หน้าละ 1/6 probability → Expected Return = (1+2+3+4+5+6)/6 = <strong>$3.50</strong><br>
+      ถ้าจ่าย &lt;$3.50 เพื่อโยก → <em class="em-green">คาดกำไรในระยะยาว</em> · ถ้าจ่าย &gt;$3.50 → <em class="em-red">คาดขาดทุน</em></p>
+    </div>
+
+    <p class="body-text">แต่ในโลกจริงมี <strong>Carrying Cost</strong> (ดอกเบี้ย) ด้วย ดังนั้น:</p>
+
+    <div class="formula">
+      Theoretical Value = Expected Return − Carrying Cost
+      <div class="comment">ราคาที่ยุติธรรมที่ทำให้ทั้ง buyer และ seller break even ในระยะยาว</div>
+    </div>
+
+    <div class="quote">
+      <p>"The goal of option evaluation is to determine, through theoretical pricing models, the theoretical value of an option. The trader can then make an intelligent decision whether the option is overpriced or underpriced in the marketplace."</p>
+      <div class="quote-source">— Natenberg, Chapter 3</div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 Edge = ซื้อ underpriced / ขาย overpriced</div>
+      <p>ถ้า Theoretical Value = $6 แต่ตลาดขาย option ที่ $4 → ซื้อ มี edge $2 · ถ้าตลาดขายที่ $8 → ขาย มี edge $2 — นี่คือ logic พื้นฐานที่ professional traders ใช้</p>
+    </div>
+  </div>
+
+  <!-- Section 3: Word on Models -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">A Word on Models · โมเดลไม่ใช่ความจริง</span>
+    </div>
+
+    <div class="quote">
+      <p>"It is unwise, and sometimes dangerous, to assume that the model and the real world which it represents are identical in every way."</p>
+      <div class="quote-source">— Natenberg, Chapter 3</div>
+    </div>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">โมเดลมีค่า</div>
+        <p>เหมือนเทียนเล่มเล็กในห้องมืด — ไม่ได้เห็นทุกอย่าง แต่ดีกว่าเดินในความมืดสนิท</p>
+      </div>
+      <div class="card">
+        <div class="card-label">โมเดลมีขีดจำกัด</div>
+        <p>Garbage in → Garbage out ถ้า input ผิด โดยเฉพาะ <strong class="em-red">Volatility</strong> output จะผิดทั้งหมด</p>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ อันตรายของ over-confidence ใน model</div>
+      <p>ยิ่ง trade ใหญ่ขึ้น ความผิดพลาดของ model จะถูก magnify ขึ้นตาม — Natenberg เตือนว่า trader ที่ trade ขนาดใหญ่โดยเชื่อ model 100% เสี่ยง "financial disaster" จากความเข้าใจผิดเรื่อง limitation</p>
+    </div>
+  </div>
+
+  <!-- Section 4: 5 Steps to Build a Pricing Model -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">5 ขั้นตอนสร้าง Pricing Model</span>
+    </div>
+
+    <p class="body-text">Natenberg สรุป logic ที่ Black-Scholes ใช้ไว้ใน 5 ขั้นตอน:</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Propose possible prices at expiration</div>
+          <div class="step-desc">กำหนดชุดของราคาที่ underlying อาจเป็นได้ที่ expiry — จาก 5 ราคาแบบง่าย จนถึง distribution ต่อเนื่องที่ครอบคลุมทุกความเป็นไปได้</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Assign probability to each price</div>
+          <div class="step-desc">ราคาใกล้ราคาปัจจุบันมี probability สูงกว่า → ใช้ lognormal distribution (Black-Scholes assumption) ซึ่งสะท้อนความจริงที่ว่าราคาหุ้นไม่ติดลบ</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Assume arbitrage-free underlying market</div>
+          <div class="step-desc">ตลาด underlying ต้องไม่มีโอกาส arbitrage — ทุกคนได้ return ยุติธรรม ไม่มีใครได้เปรียบฟรีๆ จากตลาด underlying</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Calculate expected return for the option</div>
+          <div class="step-desc">คำนวณ weighted average ของ option value ที่ทุก price outcome — ผลคือ Expected Return ก่อนหักค่าใช้จ่าย</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Deduct carrying cost → get Theoretical Value</div>
+          <div class="step-desc">หักดอกเบี้ยในช่วงที่ถือ option → ได้ Theoretical Value ที่ใช้เปรียบกับราคาตลาดได้จริง</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Black-Scholes Inputs -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Black-Scholes Model · 5 Inputs → 1 Theoretical Value</span>
+    </div>
+
+    <!-- BS Flow Diagram -->
+    <div class="bs-diagram">
+      <div class="bs-title">BLACK-SCHOLES INPUT → OUTPUT FLOW</div>
+      <div class="bs-flow">
+        <div class="bs-inputs">
+          <div class="bs-input-item"><span class="bs-input-dot"></span>Exercise Price (Strike)</div>
+          <div class="bs-input-item"><span class="bs-input-dot"></span>Time to Expiration</div>
+          <div class="bs-input-item"><span class="bs-input-dot"></span>Underlying Price</div>
+          <div class="bs-input-item"><span class="bs-input-dot"></span>Interest Rate (Risk-free)</div>
+          <div class="bs-input-item vol"><span class="bs-input-dot vol"></span>Volatility ⭐ (ยากที่สุด)</div>
+        </div>
+        <div class="bs-arrow">
+          <div class="bs-arrow-line"></div>
+          <div style="font-size:9px; color:var(--text-dim); font-family:monospace; margin-top:4px; text-align:center;">B-S<br>Model</div>
+        </div>
+        <div class="bs-output">
+          <div class="bs-output-label">THEORETICAL VALUE</div>
+          <div class="bs-output-val">$X.XX</div>
+          <div style="font-size:10px; color:var(--text-dim); margin-top:4px;">เปรียบกับราคาตลาด<br>→ overpriced / underpriced</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input effects table -->
+    <p class="body-text">ผลของการเปลี่ยนแปลง input แต่ละตัวต่อราคา option:</p>
+
+    <table class="effect-table">
+      <thead>
+        <tr>
+          <th>INPUT</th>
+          <th>เพิ่มขึ้น →</th>
+          <th>Call Value</th>
+          <th>Put Value</th>
+          <th>หมายเหตุ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Strike Price (K)</strong></td>
+          <td>K ↑</td>
+          <td class="down">ลด ↓</td>
+          <td class="up">เพิ่ม ↑</td>
+          <td>Strike สูง = Call แพงกว่า = ยาก ITM</td>
+        </tr>
+        <tr>
+          <td><strong>Time to Expiry (T)</strong></td>
+          <td>T ↑</td>
+          <td class="up">เพิ่ม ↑</td>
+          <td class="up">เพิ่ม ↑</td>
+          <td>เวลามากขึ้น = โอกาส ITM มากขึ้น ทั้ง 2 ฝั่ง</td>
+        </tr>
+        <tr>
+          <td><strong>Underlying Price (S)</strong></td>
+          <td>S ↑</td>
+          <td class="up">เพิ่ม ↑</td>
+          <td class="down">ลด ↓</td>
+          <td>ราคาหุ้นขึ้น = call ดีขึ้น, put แย่ลง</td>
+        </tr>
+        <tr>
+          <td><strong>Interest Rate (r)</strong></td>
+          <td>r ↑</td>
+          <td class="up">เพิ่ม ↑</td>
+          <td class="down">ลด ↓</td>
+          <td>เพิ่ม forward price → call ได้ประโยชน์ · สำคัญน้อยกว่า vol มาก</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Volatility (σ) ⭐</strong></td>
+          <td>σ ↑</td>
+          <td class="up">เพิ่ม ↑↑</td>
+          <td class="up">เพิ่ม ↑↑</td>
+          <td>เพิ่ม ทั้ง call และ put เสมอ — <strong>input ที่สำคัญที่สุด</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Dividends (D)</strong></td>
+          <td>D ↑</td>
+          <td class="down">ลด ↓</td>
+          <td class="up">เพิ่ม ↑</td>
+          <td>ลด forward price → call เสียเปรียบ · เฉพาะ stock options</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 6: Each Input Deep Dive -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Deep Dive · แต่ละ Input มีรายละเอียดอะไรบ้าง</span>
+    </div>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Strike Price</div>
+        <p>Fixed ตลอดอายุ option — ไม่เปลี่ยน ไม่ต้อง estimate ใส่ตามสัญญาได้เลย</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Time to Expiry</div>
+        <p>ใส่เป็น annualized fraction: 91 วัน = 91/365 ≈ 0.25 · model รับทั้ง calendar days และ trading days</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Underlying Price</div>
+        <p>ใช้ <strong>bid price</strong> ถ้า long option (จะต้อง hedge ด้วยการ short underlying) · ใช้ <strong>ask price</strong> ถ้า short option</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Interest Rate</div>
+        <p>ใช้ <strong>risk-free rate</strong> = T-bill yield ที่ maturity ใกล้เคียงกับ option expiry · สำหรับ stock options มีบทบาท 2 ด้าน (forward price + carrying cost)</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">Interest Rate มีบทบาท 2 อย่างในหุ้น</div>
+      <p>1. <strong>เพิ่ม forward price</strong> → call ได้ประโยชน์, put เสียเปรียบ<br>
+      2. <strong>เพิ่ม carrying cost</strong> ของการถือ option → ลดมูลค่า option ทั้งคู่<br>
+      ผลรวม: rate สูงขึ้น → call value ↑ เล็กน้อย · put value ↓ เล็กน้อย · แต่ effect เล็กมากเมื่อเทียบกับ volatility</p>
+    </div>
+  </div>
+
+  <!-- Section 7: Volatility - The Star -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">⭐ Volatility — Input ที่สำคัญและยากที่สุด</span>
+    </div>
+
+    <div class="quote">
+      <p>"Of all the inputs required for option evaluation, volatility is the most difficult for traders to understand. At the same time, volatility often plays the most important role in actual trading situations."</p>
+      <div class="quote-source">— Natenberg, Chapter 3</div>
+    </div>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Inputs อื่น 4 ตัว</div>
+        <p>Observable ได้จาก market data โดยตรง — ดูจาก screen ได้เลย ไม่ต้อง estimate</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Volatility</div>
+        <p><strong class="em-red">ต้อง estimate เสมอ</strong> — ไม่มีวิธีดูจาก screen โดยตรง ทุกคนเห็น price เหมือนกัน แต่ vol estimate ต่างกัน → สร้าง edge</p>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 ทำไม Volatility ถึงสำคัญที่สุด</div>
+      <p>Volatility เพิ่มขึ้น → <em class="em-green">ทั้ง Call และ Put มีมูลค่าเพิ่มขึ้นพร้อมกัน</em> — เพราะ vol สูง = โอกาสที่ราคาจะเคลื่อนไหวมาก = โอกาส ITM สูงขึ้นทุก option · นี่คือเหตุผลที่ IV Crush ทำให้ทุก option ราคาตกหลัง earnings</p>
+    </div>
+
+    <div class="note">
+      <div class="note-label">Volatility ในบทนี้ vs บทที่ 4</div>
+      <p>บทนี้ Natenberg แค่บอกว่า "volatility = speed ของตลาด" และสัญญาว่าจะอธิบาย deep dive ในบท 4 ซึ่งจะครอบคลุม Historical Vol, Implied Vol, และวิธีใช้งานจริง — นั่นคือหัวใจหลักของ options trading</p>
+    </div>
+  </div>
+
+  <!-- Section 8: Riskless Hedge -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">Riskless Hedge · แนวคิดที่ทำให้ Black-Scholes ทำงานได้</span>
+    </div>
+
+    <p class="body-text">Black-Scholes สร้างบน assumption ว่าสามารถ hedge option ด้วย underlying ได้แบบ "riskless" — ไม่มีความเสี่ยงสำหรับ small price change:</p>
+
+    <div class="formula">
+      Hedge Ratio (Delta) = ΔOption / ΔUnderlying
+      <div class="comment">สัดส่วน underlying ที่ต้องถือเพื่อ hedge option position ให้ neutral กับ price change เล็กๆ</div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ความหมายในทางปฏิบัติ</div>
+      <p>ถ้า Delta = 0.50 → ถือ call 1 contract ต้อง short หุ้น 50 หุ้น เพื่อ hedge · แต่ Delta เปลี่ยนตลอดเวลาตามราคา → ต้อง rebalance ต่อเนื่อง (dynamic hedging) — นี่คือ concept ที่นำไปสู่ Greeks ทั้งหมดในบท 6</p>
+    </div>
+  </div>
+
+  <!-- Practical Application -->
+  <div class="practical">
+    <div class="practical-label">⚡ CONNECT TO YOUR TRADING</div>
+    <p><strong>Theoretical Value vs Market Price:</strong> ทุกครั้งที่ดู option chain บน Webull ราคาที่เห็นคือ market price — ถ้ามี pricing model จะรู้ว่า option ตัวนั้น overpriced หรือ underpriced เมื่อเทียบ theoretical value</p>
+    <p><strong>IV Crush explained:</strong> ก่อน earnings ทุก option ราคาสูงเพราะ vol สูง (uncertainty) · หลัง earnings ผลออกมาแล้ว vol ตก → ทั้ง call และ put ราคาตกพร้อมกัน แม้หุ้นขยับตามที่คาด — นี่คือ "High IV = overpriced" ที่จะเจอในบท 4</p>
+    <p><strong>TE position ที่ถือ:</strong> KORE Power acquisition ทำให้ IV พุ่งขึ้น → option ทุกตัวใน TE แพงขึ้น → ถ้าเปิด position ใหม่ตอน IV สูง เสี่ยง IV Crush หลังจบ event · นี่คือ "Dangerous High IV" ที่เคยคุยกัน</p>
+    <p><strong>สำหรับ Content Series:</strong> บทนี้เป็น foundation ของ episode ที่จะอธิบาย "ทำไม IV ถึงสำคัญ" ได้ชัดเจน — เพราะ vol คือ input เดียวที่ต้อง estimate และส่งผลมากที่สุดต่อราคา option</p>
+  </div>
+
+  <!-- Key Takeaways -->
+  <div class="section" style="margin-top: 28px;">
+    <div class="section-header">
+      <span class="section-num">✓</span>
+      <span class="section-title">สรุปสิ่งที่ต้องจำจากบทนี้</span>
+    </div>
+    <ul class="checklist">
+      <li>Options trader ต้องถูกทั้ง <strong>ทิศทาง</strong> และ <strong>speed</strong> — ต่างจาก stock/futures trader</li>
+      <li>Theoretical Value = Expected Return − Carrying Cost · ใช้เปรียบกับ market price → หา edge</li>
+      <li>โมเดลเป็นแค่เครื่องมือ ไม่ใช่ความจริง — Garbage in = Garbage out</li>
+      <li>Black-Scholes ต้องการ 5 inputs: Strike, Time, Underlying Price, Interest Rate, <strong>Volatility</strong></li>
+      <li>Volatility เพิ่ม → ทั้ง call และ put มีมูลค่าเพิ่มขึ้นเสมอ</li>
+      <li>Volatility คือ input เดียวที่ <strong>ต้อง estimate</strong> — นี่คือที่มาของ edge ใน options</li>
+      <li>Interest rate: สำคัญน้อยมากเมื่อเทียบ volatility · Dividends: สำคัญเฉพาะ stock options</li>
+      <li>Riskless hedge = ใช้ underlying hedge option → นำไปสู่ Delta และ Greeks ทั้งหมด</li>
+    </ul>
+  </div>
+
+   <br>
+  <center>
+  <a href="index.html" class="nav-btn active">หน้าแรก</a>
+  </center>
+
+  <!-- Footer nav -->
+  <div class="footer-nav">
+    <a href="natenberg_ch2.html" class="nav-btn active"> <- บทที่ 2 </a>
+    <div class="page-indicator">Ch.3 / 20</div>
+    <a href="natenberg_ch4.html" class="nav-btn active">บทที่ 4 →</a>
+  </div>
+
+</div>
+</body>
+</html>

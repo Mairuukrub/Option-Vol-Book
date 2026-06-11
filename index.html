@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg — Option Volatility & Pricing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: #2a3441;
+    --accent: #58c4a0;
+    --accent2: #f0a050;
+    --accent3: #e06c75;
+    --accent4: #79b8ff;
+    --text: #cdd9e5;
+    --text-dim: #768390;
+    --text-bright: #f0f6fc;
+    --tag-bg: #1a2f26;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Hero */
+  .hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-bright);
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+
+  .hero-title span {
+    color: var(--accent);
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  .hero-meta {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+
+  .meta-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    max-width: 760px;
+    margin: 24px auto 0;
+    padding: 0 20px;
+  }
+
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--accent), var(--accent4));
+    border-radius: 2px;
+    width: 15%;
+  }
+
+  .progress-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* Main container */
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Chapter cards grid */
+  .chapters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 520px) {
+    .chapters-grid { grid-template-columns: 1fr; }
+    .hero-title { font-size: 22px; }
+  }
+
+  /* Chapter card */
+  .ch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ch-card:hover {
+    border-color: rgba(88,196,160,0.5);
+    background: var(--surface2);
+  }
+
+  .ch-card.done {
+    border-color: rgba(88,196,160,0.3);
+  }
+
+  .ch-card.done::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 8px 0 0 8px;
+  }
+
+  .ch-card.coming {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .ch-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .ch-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  .ch-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  .ch-badge.done {
+    background: var(--tag-bg);
+    color: var(--accent);
+    border: 1px solid rgba(88,196,160,0.3);
+  }
+
+  .ch-badge.coming {
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .ch-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 5px;
+    line-height: 1.3;
+  }
+
+  .ch-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .ch-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .ch-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  .ch-tag.accent {
+    color: var(--accent);
+    border-color: rgba(88,196,160,0.25);
+    background: var(--tag-bg);
+  }
+
+  /* Reading guide box */
+  .guide-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+  }
+
+  .guide-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .guide-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--accent2);
+    border-radius: 2px;
+  }
+
+  .guide-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .guide-list li {
+    font-size: 12px;
+    color: var(--text);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .guide-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent2);
+    font-size: 11px;
+  }
+
+  /* About box */
+  .about-box {
+    background: #0e1f18;
+    border: 1px solid rgba(88,196,160,0.25);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+
+  .about-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .about-box p {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* Full width coming-soon card */
+  .ch-card.full {
+    grid-column: span 2;
+  }
+
+  @media (max-width: 520px) {
+    .ch-card.full { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Natenberg · 1994 · Study Notes</div>
+  <div class="hero-title">Option Volatility &amp; <span>Pricing</span></div>
+  <div class="hero-subtitle">สรุปภาษาไทย · Advanced Strategies and Trading Techniques</div>
+  <div class="hero-meta">
+    <div class="meta-pill"><span class="dot"></span>20 บท</div>
+    <div class="meta-pill"><span class="dot"></span>475 หน้า</div>
+    <div class="meta-pill"><span class="dot" style="background:var(--accent2)"></span>3 บทพร้อมแล้ว</div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill"></div>
+  </div>
+  <div class="progress-label">3 / 20 chapters complete</div>
+</div>
+
+<div class="container">
+
+  <!-- Done chapters -->
+  <div class="section-label">บทที่อ่านแล้ว</div>
+
+  <div class="chapters-grid">
+
+    <a href="natenberg_ch1.html" class="ch-card done">
+      <div class="ch-card-top">
+        <span class="ch-num">CH.01</span>
+        <span class="ch-badge done">✓ พร้อม</span>
+      </div>
+      <div class="ch-title">The Language of Options</div>
+      <div class="ch-desc">คำศัพท์พื้นฐาน, Intrinsic vs Time Value, ITM/ATM/OTM, Exercise &amp; Assignment, Settlement</div>
+      <div class="ch-tags">
+        <span class="ch-tag accent">Intrinsic Value</span>
+        <span class="ch-tag accent">Time Value</span>
+        <span class="ch-tag">Moneyness</span>
+        <span class="ch-tag">Settlement</span>
+      </div>
+    </a>
+
+    <a href="natenberg_ch2.html" class="ch-card done">
+      <div class="ch-card-top">
+        <span class="ch-num">CH.02</span>
+        <span class="ch-badge done">✓ พร้อม</span>
+      </div>
+      <div class="ch-title">Elementary Strategies</div>
+      <div class="ch-desc">P&L Diagrams แบบ interactive, Straddle, Strangle, Bull/Bear Spread, กฎวาด Expiration Graph</div>
+      <div class="ch-tags">
+        <span class="ch-tag accent">P&L Diagram</span>
+        <span class="ch-tag accent">Straddle</span>
+        <span class="ch-tag">Bull Spread</span>
+        <span class="ch-tag">Expiry Graph</span>
+      </div>
+    </a>
+
+    <a href="natenberg_ch3.html" class="ch-card done">
+      <div class="ch-card-top">
+        <span class="ch-num">CH.03</span>
+        <span class="ch-badge done">✓ พร้อม</span>
+      </div>
+      <div class="ch-title">Theoretical Pricing Models</div>
+      <div class="ch-desc">Black-Scholes 5 inputs, Expected Return, Theoretical Value, Riskless Hedge, ทำไม Volatility ถึงสำคัญที่สุด</div>
+      <div class="ch-tags">
+        <span class="ch-tag accent">Black-Scholes</span>
+        <span class="ch-tag accent">Volatility ⭐</span>
+        <span class="ch-tag">Theo Value</span>
+        <span class="ch-tag">Hedge Ratio</span>
+      </div>
+    </a>
+
+    <!-- Upcoming next -->
+    <a href="natenberg_ch4.html" class="ch-card coming">
+      <div class="ch-card-top">
+        <span class="ch-num">CH.04</span>
+        <span class="ch-badge coming">เร็วๆ นี้</span>
+      </div>
+      <div class="ch-title">Volatility</div>
+      <div class="ch-desc">Historical vs Implied Vol, Random Walk, Standard Deviation, Types of Volatility</div>
+      <div class="ch-tags">
+        <span class="ch-tag">Implied Vol</span>
+        <span class="ch-tag">IV Crush</span>
+        <span class="ch-tag">HV vs IV</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Upcoming chapters -->
+  <div class="section-label">บทที่เหลือ</div>
+
+  <div class="chapters-grid">
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.05</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Using an Option's Theoretical Value</div>
+      <div class="ch-desc">เอา Theo Value ไปใช้ตัดสินใจเทรดจริง</div>
+      <div class="ch-tags"><span class="ch-tag">Edge</span><span class="ch-tag">Overpriced</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.06</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Option Values &amp; Changing Market Conditions</div>
+      <div class="ch-desc">Delta, Gamma, Theta, Vega/Kappa, Rho ครบทุก Greek</div>
+      <div class="ch-tags"><span class="ch-tag">Delta</span><span class="ch-tag">Gamma</span><span class="ch-tag">Theta</span><span class="ch-tag">Vega</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.07</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Introduction to Spreading</div>
+      <div class="ch-desc">What is a Spread, Why Spread, Risk Management Tool</div>
+      <div class="ch-tags"><span class="ch-tag">Spread</span><span class="ch-tag">Risk</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.08</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Volatility Spreads</div>
+      <div class="ch-desc">Backspread, Ratio Spread, Straddle, Strangle, Butterfly, Calendar</div>
+      <div class="ch-tags"><span class="ch-tag">Iron Condor</span><span class="ch-tag">Calendar</span><span class="ch-tag">Butterfly</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.09</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Risk Considerations</div>
+      <div class="ch-desc">Choosing spreads, Practical risks, Margin for error, Liquidity</div>
+      <div class="ch-tags"><span class="ch-tag">Risk</span><span class="ch-tag">Liquidity</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.10</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Bull and Bear Spreads</div>
+      <div class="ch-desc">Vertical spreads ทุกรูปแบบ, Naked positions</div>
+      <div class="ch-tags"><span class="ch-tag">Bull Spread</span><span class="ch-tag">Bear Spread</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.11</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Option Arbitrage</div>
+      <div class="ch-desc">Synthetic positions, Put-Call Parity, Conversions, Boxes</div>
+      <div class="ch-tags"><span class="ch-tag">Put-Call Parity</span><span class="ch-tag">Synthetic</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.12</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Early Exercise of American Options</div>
+      <div class="ch-desc">เมื่อไหร่ควร exercise ก่อน expiry, Futures vs Stock options</div>
+      <div class="ch-tags"><span class="ch-tag">Early Exercise</span><span class="ch-tag">American</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.13</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Hedging with Options</div>
+      <div class="ch-desc">Covered Calls, Protective Puts, Collars, Portfolio Insurance</div>
+      <div class="ch-tags"><span class="ch-tag">Collar</span><span class="ch-tag">Covered Call</span><span class="ch-tag">CSP</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.14</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Volatility Revisited</div>
+      <div class="ch-desc">Vol forecasting, Implied Vol analysis, Practical approaches</div>
+      <div class="ch-tags"><span class="ch-tag">Vol Forecast</span><span class="ch-tag">Implied Vol</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.15</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Stock Index Futures &amp; Options</div>
+      <div class="ch-desc">Index options, Index arbitrage, Biases in index markets</div>
+      <div class="ch-tags"><span class="ch-tag">SPX</span><span class="ch-tag">Index</span></div>
+    </div>
+
+    <div class="ch-card coming">
+      <div class="ch-card-top"><span class="ch-num">CH.16–20</span><span class="ch-badge coming">เร็วๆ นี้</span></div>
+      <div class="ch-title">Intermarket Spreading &amp; More</div>
+      <div class="ch-desc">Cross-market vol relationships, Advanced strategies</div>
+      <div class="ch-tags"><span class="ch-tag">Advanced</span></div>
+    </div>
+
+  </div>
+
+  <!-- Reading Guide -->
+  <div class="guide-box">
+    <div class="guide-title">แนะนำลำดับการอ่าน</div>
+    <ul class="guide-list">
+      <li><strong>เพิ่งเริ่มต้น:</strong> บท 1 → 2 → 3 ตามลำดับ ปูพื้นฐานทั้งหมดก่อน</li>
+      <li><strong>เข้าใจ Greeks:</strong> บท 3 → 4 (Volatility) → 6 (Greeks) — trio ที่สำคัญที่สุด</li>
+      <li><strong>Income Strategies (CSP/CC/Collar):</strong> เน้นบท 8 (Vol Spreads) + 13 (Hedging) หลังจากผ่าน 6 แล้ว</li>
+      <li><strong>Iron Condor / Advanced:</strong> บท 7, 8, 9, 10 ต่อจากกัน</li>
+    </ul>
+  </div>
+
+  <!-- About -->
+  <div class="about-box">
+    <div class="about-label">ABOUT THIS SITE</div>
+    <p>สรุปเนื้อหาจากหนังสือ <em>Option Volatility and Pricing</em> โดย Sheldon Natenberg (1994, 2nd Ed.) เป็นภาษาไทย โดยเน้นการเชื่อมโยงกับการเทรด options จริงบนตลาด US · ทุกบทมี interactive diagrams, formula และ practical notes</p>
+  </div>
+
+</div>
+</body>
+</html>

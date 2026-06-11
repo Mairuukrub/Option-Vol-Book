@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.1 — The Language of Options</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: #2a3441;
+    --accent: #58c4a0;
+    --accent2: #f0a050;
+    --accent3: #e06c75;
+    --text: #cdd9e5;
+    --text-dim: #768390;
+    --text-bright: #f0f6fc;
+    --tag-bg: #1a2f26;
+    --tag-text: #58c4a0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 24px 24px;
+  }
+
+  .book-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .chapter-tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(88,196,160,0.3);
+    margin-bottom: 12px;
+  }
+
+  .chapter-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-bright);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .chapter-subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* Main layout */
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  /* TL;DR box */
+  .tldr {
+    background: #0e1f18;
+    border: 1px solid rgba(88,196,160,0.4);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 28px;
+  }
+
+  .tldr-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .tldr p {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 28px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--tag-bg);
+    border: 1px solid rgba(88,196,160,0.25);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: 0.3px;
+  }
+
+  /* Concept cards */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 480px) {
+    .concept-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+  }
+
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+
+  .card p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Definition table */
+  .def-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .def-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .def-row:last-child { border-bottom: none; }
+
+  .def-term {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent2);
+    padding: 10px 12px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+  }
+
+  .def-desc {
+    font-size: 13px;
+    color: var(--text);
+    padding: 10px 14px;
+    line-height: 1.6;
+  }
+
+  /* ITM/OTM visual */
+  .moneyness-visual {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .moneyness-bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    margin: 12px 0;
+    font-size: 12px;
+  }
+
+  .bar-left, .bar-right {
+    height: 6px;
+    border-radius: 3px;
+  }
+
+  .bar-left { background: linear-gradient(to right, transparent, var(--accent)); }
+  .bar-right { background: linear-gradient(to right, var(--accent3), transparent); }
+
+  .bar-center {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-bright);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 3px;
+    text-align: center;
+    white-space: nowrap;
+    margin: 0 8px;
+  }
+
+  .bar-labels {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .bar-labels span:last-child { text-align: right; }
+  .bar-labels span:nth-child(2) { width: 80px; margin: 0 8px; }
+
+  /* Highlight box */
+  .note {
+    background: #1a1e2a;
+    border: 1px solid rgba(240,160,80,0.3);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 14px;
+  }
+
+  .note-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+
+  .note p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Warning box */
+  .warning {
+    background: #1f1316;
+    border: 1px solid rgba(224,108,117,0.3);
+    border-left: 3px solid var(--accent3);
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 14px;
+  }
+
+  .warning-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--accent3);
+    margin-bottom: 6px;
+  }
+
+  .warning p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  /* Formula */
+  .formula {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 10px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .formula .comment {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Practical section */
+  .practical {
+    background: #0d1a24;
+    border: 1px solid rgba(88,196,160,0.2);
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 14px;
+  }
+
+  .practical-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .practical p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .practical p + p { margin-top: 8px; }
+
+  /* Checklist */
+  .checklist {
+    list-style: none;
+    margin-top: 10px;
+  }
+
+  .checklist li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 5px 0 5px 20px;
+    position: relative;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 12px;
+  }
+
+  /* Body text */
+  .body-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  strong { color: var(--text-bright); font-weight: 500; }
+
+  .em-green { color: var(--accent); font-weight: 500; }
+  .em-orange { color: var(--accent2); font-weight: 500; }
+  .em-red { color: var(--accent3); font-weight: 500; }
+
+  /* Footer nav */
+  .footer-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 14px;
+    cursor: default;
+  }
+
+  .nav-btn.active {
+    color: var(--accent);
+    border-color: rgba(88,196,160,0.4);
+  }
+
+  .page-indicator {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="book-label">Natenberg · Option Volatility & Pricing · 1994</div>
+  <div class="chapter-tag">CHAPTER 01</div>
+  <div class="chapter-title">The Language of Options</div>
+  <div class="chapter-subtitle">สรุปเนื้อหา · ภาษาพื้นฐานของ Options</div>
+</div>
+
+<div class="container">
+
+  <!-- TL;DR -->
+  <div class="tldr">
+    <div class="tldr-label">TL;DR</div>
+    <p>บทนี้ปูพื้นคำศัพท์ที่ต้องรู้ก่อนเข้าสู่เนื้อหาลึก — ตั้งแต่ anatomy ของ option contract, Intrinsic vs Time Value, ITM/OTM/ATM, ไปจนถึงระบบ settlement และ margin ที่ส่งผลต่อ cash flow จริงในการเทรด</p>
+  </div>
+
+  <!-- Section 1: Contract Specs -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Contract Specifications · ส่วนประกอบของ Option</span>
+    </div>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Underlying</div>
+        <p>สินทรัพย์อ้างอิง เช่น หุ้น, futures, index ที่ option นั้น track อยู่</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Exercise Price (Strike)</div>
+        <p>ราคาที่สิทธิ์ในการซื้อหรือขายจะถูก execute เมื่อ exercise</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Expiration Date</div>
+        <p>วันสิ้นสุดอายุ option หลังจากนี้สิทธิ์จะหมดทันที</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Type: Call / Put</div>
+        <p><strong>Call</strong> = สิทธิ์ซื้อ · <strong>Put</strong> = สิทธิ์ขาย underlying ที่ strike price</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">American vs European</div>
+      <p><strong class="em-orange">American</strong> — exercise ได้ทุกวันก่อน expiry (หุ้น US ส่วนใหญ่) · <strong class="em-green">European</strong> — exercise ได้เฉพาะวัน expiry เท่านั้น (index options บางตัว เช่น SPX)</p>
+    </div>
+  </div>
+
+  <!-- Section 2: Premium Anatomy -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Premium = Intrinsic Value + Time Value</span>
+    </div>
+
+    <p class="body-text">ราคา option ที่เห็นใน chain ประกอบด้วย 2 ส่วนเสมอ:</p>
+
+    <div class="formula">
+      Premium = Intrinsic Value + Time Value
+      <div class="comment">ทั้งสองรวมกันต้องเท่ากับ premium เสมอ ขาดไม่ได้</div>
+    </div>
+
+    <div class="def-list">
+      <div class="def-row">
+        <span class="def-term">Intrinsic Value</span>
+        <span class="def-desc">มูลค่าที่ได้จริงถ้า exercise ทันที — เท่ากับ (S − K) สำหรับ call หรือ (K − S) สำหรับ put ถ้าผลลบ จะเป็น 0 เสมอ ไม่ติดลบ</span>
+      </div>
+      <div class="def-row">
+        <span class="def-term">Time Value</span>
+        <span class="def-desc">มูลค่าส่วนเกินจาก intrinsic ที่ตลาดจ่ายให้เพราะ "ยังมีเวลาเหลือ" — ค่อยๆ หายไปเรื่อยๆ จนเป็น 0 ที่ expiry (Theta decay)</span>
+      </div>
+      <div class="def-row">
+        <span class="def-term">At Parity</span>
+        <span class="def-desc">สถานะที่ time value = 0 คือราคา option เท่ากับ intrinsic value พอดี มักเกิดใกล้ expiry หรือ deep ITM</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ตัวอย่าง</div>
+      <p>หุ้น $62, Put strike $70 → Intrinsic = $8 / ถ้า put ราคา $9 → Time value = $1 เท่านั้น<br>
+      ทอง $435/oz, Call $400 → Intrinsic = $35 / ถ้า call ราคา $50 → Time value = $15</p>
+    </div>
+  </div>
+
+  <!-- Section 3: Moneyness -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Moneyness · ITM / ATM / OTM</span>
+    </div>
+
+    <div class="moneyness-visual">
+      <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 12px;">ตำแหน่งของ Strike Price เทียบกับราคา Underlying ปัจจุบัน</p>
+
+      <!-- CALL bar -->
+      <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace;">CALL</p>
+      <div class="moneyness-bar">
+        <div class="bar-left"></div>
+        <div class="bar-center">Strike</div>
+        <div class="bar-right"></div>
+      </div>
+      <div class="bar-labels">
+        <span style="color: var(--accent)">◀ ITM (Strike &lt; Price)</span>
+        <span></span>
+        <span style="color: var(--accent3)">OTM (Strike &gt; Price) ▶</span>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <!-- PUT bar -->
+      <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace;">PUT</p>
+      <div class="moneyness-bar">
+        <div class="bar-left" style="background: linear-gradient(to right, transparent, var(--accent3))"></div>
+        <div class="bar-center">Strike</div>
+        <div class="bar-right" style="background: linear-gradient(to right, var(--accent), transparent)"></div>
+      </div>
+      <div class="bar-labels">
+        <span style="color: var(--accent3)">◀ OTM (Strike &lt; Price)</span>
+        <span></span>
+        <span style="color: var(--accent)">ITM (Strike &gt; Price) ▶</span>
+      </div>
+    </div>
+
+    <div class="def-list">
+      <div class="def-row">
+        <span class="def-term">ITM</span>
+        <span class="def-desc">In-the-Money — มี Intrinsic Value อยู่ · Call ITM เมื่อ Strike &lt; ราคา · Put ITM เมื่อ Strike &gt; ราคา</span>
+      </div>
+      <div class="def-row">
+        <span class="def-term">ATM</span>
+        <span class="def-desc">At-the-Money — Strike ≈ ราคาปัจจุบัน · มี Time Value มากที่สุด · Theta decay เร็วที่สุด</span>
+      </div>
+      <div class="def-row">
+        <span class="def-term">OTM</span>
+        <span class="def-desc">Out-of-the-Money — ไม่มี Intrinsic Value · ราคา = Time Value ล้วนๆ · เป็น 0 ถ้า expire OTM</span>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ สำคัญ</div>
+      <p>Call ITM → Put เดียวกัน (strike เดียวกัน) ต้อง OTM เสมอ ไม่มีทางเป็น ITM ทั้งคู่พร้อมกัน</p>
+    </div>
+  </div>
+
+  <!-- Section 4: Exercise & Assignment -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Exercise & Assignment</span>
+    </div>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Exercise (ผู้ซื้อ)</div>
+        <p>ผู้ถือ long option ใช้สิทธิ์ → ได้รับ underlying ที่ strike price (call) หรือ ขาย underlying ที่ strike price (put)</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Assignment (ผู้ขาย)</div>
+        <p>ผู้ขาย option ถูก assign โดย clearing house แบบสุ่ม → ต้องส่ง/รับ underlying ตามเงื่อนไข</p>
+      </div>
+    </div>
+
+    <p class="body-text" style="margin-top:4px">กระบวนการ: ผู้ซื้อแจ้ง clearing firm → clearing house สุ่มเลือกผู้ขาย → ผู้ขายถูก assign และต้องปฏิบัติตามสัญญา เมื่อ exercise แล้ว option นั้นหยุดมีอยู่ทันที</p>
+
+    <div class="note">
+      <div class="note-label">⚡ สำคัญสำหรับ Covered Call / CSP</div>
+      <p>ถ้าขาย Covered Call แล้ว option ถูก exercise → หุ้นจะถูกเรียกไปที่ strike price ทันที ไม่มีสิทธิ์เลือก ต้องเตรียมรับสถานการณ์นี้ไว้เสมอเมื่อ short call เข้า ITM</p>
+    </div>
+  </div>
+
+  <!-- Section 5: Market Integrity -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Market Integrity & Margin</span>
+    </div>
+
+    <p class="body-text">ระบบ Clearing House ทำให้ options market น่าเชื่อถือ — ไม่ต้องกังวลว่าคู่สัญญาจะ default เพราะ clearing house เป็นผู้ค้ำประกันทุก trade</p>
+
+    <div class="def-list">
+      <div class="def-row">
+        <span class="def-term">Margin Call</span>
+        <span class="def-desc">เงินประกันที่ clearing house เรียกเพิ่มเมื่อ position ขาดทุน — สามารถใช้หลักทรัพย์แทนเงินสดได้</span>
+      </div>
+      <div class="def-row">
+        <span class="def-term">Variation Call</span>
+        <span class="def-desc">เรียกเพื่อชำระ ขาดทุนที่เกิดขึ้นแล้ว — ต้องจ่ายเป็น cash เท่านั้น ไม่สามารถใช้หลักทรัพย์แทนได้</span>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ Cash Flow Risk</div>
+      <p>Webull Thailand ใช้ stock-type settlement — กำไรขาดทุนไม่ realize จนกว่าจะปิด position ถ้า position ขาดทุนหนักอาจเจอ margin call ก่อนที่ราคาจะกลับมาได้</p>
+    </div>
+  </div>
+
+  <!-- Section 6: Settlement -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Settlement Types</span>
+    </div>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Stock-Type Settlement</div>
+        <p>จ่ายเต็มจำนวนทันที · กำไร/ขาดทุนเป็น unrealized จนกว่าจะปิด position · <span class="em-green">ใช้กับ options US ทุกตัว</span></p>
+      </div>
+      <div class="card">
+        <div class="card-label">Futures-Type Settlement</div>
+        <p>ไม่จ่ายเงินล่วงหน้า · Mark-to-market ทุกวัน · กำไร/ขาดทุน realize ทันทีทุกวัน · <span class="em-orange">ใช้กับ futures</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 7: Long vs Short -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Long vs Short ในบริบท Options</span>
+    </div>
+
+    <div class="def-list">
+      <div class="def-row">
+        <span class="def-term">Long Position</span>
+        <span class="def-desc">ได้กำไรเมื่อราคา underlying ขึ้น — ไม่ว่าจะเป็น long stock, long call, short put (ล้วนเป็น bullish bias)</span>
+      </div>
+      <div class="def-row">
+        <span class="def-term">Short Position</span>
+        <span class="def-desc">ได้กำไรเมื่อราคา underlying ลง — short stock, long put, short call (ล้วนเป็น bearish bias)</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ระวังความสับสน</div>
+      <p>"Long call" = bullish · "Short call" = bearish หรือ neutral · "Long put" = bearish · "Short put (CSP)" = bullish ต้องระวังไม่งงกับทิศทาง</p>
+    </div>
+  </div>
+
+  <!-- Practical Application -->
+  <div class="practical">
+    <div class="practical-label">⚡ CONNECT TO YOUR TRADING</div>
+    <p><strong>CSP บน Webull:</strong> ตอนขาย Cash Secured Put → คือ short put = long bias ถ้า expire OTM ได้ premium เต็ม, ถ้า ITM จะถูก assign หุ้นที่ strike price (ต้องมีเงินสดวาง)</p>
+    <p style="margin-top:8px"><strong>Covered Call บน TE:</strong> short call = neutral/bearish bias บน upside ถ้าหุ้นขึ้นเกิน strike จะถูก exercise และหุ้นถูกเรียกออกไป — นี่คือสิ่งที่เกิดขึ้นในสถานการณ์ KORE Power acquisition</p>
+    <p style="margin-top:8px"><strong>Time Value Decay:</strong> เมื่อ sell options (CSP/CC) เราได้กำไรจาก time value ที่ค่อยๆ สลายตัว — ยิ่งใกล้ expiry ยิ่งเร็ว (Theta ในบท 6)</p>
+  </div>
+
+  <!-- Key Terms Summary -->
+  <div class="section" style="margin-top: 28px;">
+    <div class="section-header">
+      <span class="section-num">✓</span>
+      <span class="section-title">คำศัพท์ที่ต้องจำจากบทนี้</span>
+    </div>
+    <ul class="checklist">
+      <li><strong>Premium</strong> = Intrinsic Value + Time Value เสมอ</li>
+      <li><strong>ITM Call</strong> = Strike &lt; ราคาปัจจุบัน | <strong>ITM Put</strong> = Strike &gt; ราคาปัจจุบัน</li>
+      <li><strong>ATM</strong> = มี time value มากที่สุด, theta decay เร็วที่สุด</li>
+      <li><strong>Exercise</strong> = ผู้ซื้อใช้สิทธิ์ | <strong>Assignment</strong> = ผู้ขายถูกเรียก</li>
+      <li><strong>American option</strong> = exercise ได้ก่อน expiry (หุ้น US ทั้งหมด)</li>
+      <li><strong>Intrinsic value ≥ 0 เสมอ</strong> ไม่มีติดลบ</li>
+      <li><strong>At Parity</strong> = time value = 0, premium = intrinsic value</li>
+    </ul>
+  </div>
+
+  <!-- Footer nav -->
+  <div class="footer-nav">
+    <a href="index.html" class="nav-btn active"> หน้าแรก </a>
+    <div class="page-indicator">Ch.1 / 20</div>
+    <a href="natenberg_ch2.html" class="nav-btn active"> บทที่ 2 Elementary -> </a>
+  </div>
+
+</div>
+</body>
+</html>

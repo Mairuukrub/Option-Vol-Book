@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.2 — Elementary Strategies</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: #2a3441;
+    --accent: #58c4a0;
+    --accent2: #f0a050;
+    --accent3: #e06c75;
+    --accent4: #79b8ff;
+    --text: #cdd9e5;
+    --text-dim: #768390;
+    --text-bright: #f0f6fc;
+    --tag-bg: #1a2f26;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 24px 24px;
+  }
+
+  .book-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .chapter-tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(88,196,160,0.3);
+    margin-bottom: 12px;
+  }
+
+  .chapter-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-bright);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .chapter-subtitle { font-size: 13px; color: var(--text-dim); }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  .tldr {
+    background: #0e1f18;
+    border: 1px solid rgba(88,196,160,0.4);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 28px;
+  }
+
+  .tldr-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .tldr p { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  .section { margin-bottom: 32px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--tag-bg);
+    border: 1px solid rgba(88,196,160,0.25);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: 0.3px;
+  }
+
+  .body-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+
+  /* Strategy tabs */
+  .tab-group { margin-bottom: 6px; }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    background: var(--surface2);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    border-color: rgba(88,196,160,0.4);
+  }
+
+  .tab-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 6px 6px 6px;
+    padding: 16px;
+  }
+
+  .tab-panel.active { display: block; }
+
+  /* P&L SVG chart container */
+  .chart-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  svg.chart {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Strategy info grid */
+  .strat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 480px) { .strat-grid { grid-template-columns: 1fr; } }
+
+  .strat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 12px;
+  }
+
+  .strat-card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .strat-card p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .val-green { color: var(--accent); font-weight: 500; }
+  .val-red { color: var(--accent3); font-weight: 500; }
+  .val-orange { color: var(--accent2); font-weight: 500; }
+  .val-blue { color: var(--accent4); font-weight: 500; }
+
+  /* Rule table */
+  .rule-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .rule-row {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .rule-row:last-child { border-bottom: none; }
+
+  .rule-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--tag-bg);
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  .rule-text {
+    font-size: 13px;
+    color: var(--text);
+    padding: 10px 14px;
+    line-height: 1.6;
+  }
+
+  /* Note / Warning */
+  .note {
+    background: #1a1e2a;
+    border: 1px solid rgba(240,160,80,0.3);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 14px;
+  }
+
+  .note-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+
+  .note p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .warning {
+    background: #1f1316;
+    border: 1px solid rgba(224,108,117,0.3);
+    border-left: 3px solid var(--accent3);
+    border-radius: 6px;
+    padding: 12px 15px;
+    margin-bottom: 14px;
+  }
+
+  .warning-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--accent3);
+    margin-bottom: 6px;
+  }
+
+  .warning p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  /* Summary matrix */
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .matrix th {
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+
+  .matrix td {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+    background: var(--surface);
+    line-height: 1.4;
+  }
+
+  .matrix tr:hover td { background: var(--surface2); }
+
+  .practical {
+    background: #0d1a24;
+    border: 1px solid rgba(88,196,160,0.2);
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 14px;
+  }
+
+  .practical-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .practical p { font-size: 13px; color: var(--text); line-height: 1.65; }
+  .practical p + p { margin-top: 8px; }
+
+  .checklist { list-style: none; margin-top: 10px; }
+
+  .checklist li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 6px 0 6px 22px;
+    position: relative;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
+
+  strong { color: var(--text-bright); font-weight: 500; }
+
+  .footer-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 14px;
+    cursor: default;
+    text-decoration: none;
+  }
+
+  .nav-btn.active { color: var(--accent); border-color: rgba(88,196,160,0.4); }
+  .page-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="book-label">Natenberg · Option Volatility & Pricing · 1994</div>
+  <div class="chapter-tag">CHAPTER 02</div>
+  <div class="chapter-title">Elementary Strategies</div>
+  <div class="chapter-subtitle">สรุปเนื้อหา · Strategy พื้นฐานและการอ่าน P&amp;L Diagram</div>
+</div>
+
+<div class="container">
+
+  <!-- TL;DR -->
+  <div class="tldr">
+    <div class="tldr-label">TL;DR</div>
+    <p>บทนี้สอน 2 เรื่องหลัก: (1) วิธีคิด P&amp;L ของ strategy แต่ละแบบที่ expiry — Long/Short Call/Put, Straddle, Strangle, Bull Spread, Bear Spread และ Ratio Spread และ (2) กฎในการวาด Expiration Graph เพื่อวิเคราะห์ position ซับซ้อนได้ด้วยตัวเอง</p>
+  </div>
+
+  <!-- Section 1: Key Concept -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">วิธีคิดพื้นฐาน · ประเมิน Option ที่ Expiry</span>
+    </div>
+
+    <p class="body-text">Natenberg ใช้ logic ง่ายๆ: <strong>option จะมีมูลค่าเท่า intrinsic value ที่ expiry เท่านั้น</strong> ดังนั้นถ้าซื้อ option ราคา X และ intrinsic value ที่ expiry &gt; X → กำไร, ถ้าน้อยกว่า → ขาดทุน</p>
+
+    <div class="note">
+      <div class="note-label">ตัวอย่างจากหนังสือ</div>
+      <p>Underlying = 99.00 | ซื้อ 100 Call ที่ 2.70 | ถ้า expiry ที่ 108 → intrinsic = 8.00 → กำไร 5.30<br>
+      Break-even = Strike + Premium = 100 + 2.70 = <strong>102.70</strong></p>
+    </div>
+  </div>
+
+  <!-- Section 2: Interactive Strategy Charts -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">P&amp;L Diagrams · 4 Basic Positions</span>
+    </div>
+
+    <div class="tab-group">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('long-call')">Long Call</button>
+        <button class="tab-btn" onclick="showTab('short-call')">Short Call</button>
+        <button class="tab-btn" onclick="showTab('long-put')">Long Put</button>
+        <button class="tab-btn" onclick="showTab('short-put')">Short Put</button>
+      </div>
+
+      <!-- LONG CALL -->
+      <div id="long-call" class="tab-panel active">
+        <div class="chart-wrap">
+          <div class="chart-title">LONG 100 CALL @ 2.70 · P&amp;L AT EXPIRY</div>
+          <svg class="chart" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowG" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#58c4a0"/>
+              </marker>
+            </defs>
+            <!-- Grid -->
+            <line x1="50" y1="10" x2="50" y2="175" stroke="#2a3441" stroke-width="1"/>
+            <line x1="50" y1="100" x2="490" y2="100" stroke="#2a3441" stroke-width="1"/>
+            <!-- Price labels -->
+            <text x="90" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">85</text>
+            <text x="160" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">95</text>
+            <text x="230" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">100</text>
+            <text x="300" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">105</text>
+            <text x="370" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">110</text>
+            <text x="440" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">115</text>
+            <!-- Y axis labels -->
+            <text x="44" y="44" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">+8</text>
+            <text x="44" y="72" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">+5</text>
+            <text x="44" y="104" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">0</text>
+            <text x="44" y="129" fill="#58c4a0" font-size="9" font-family="monospace" text-anchor="end">-2.7</text>
+            <text x="44" y="160" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">-8</text>
+            <!-- P&L Line: flat at -2.70 below strike 100, then rises -->
+            <!-- Strike 100 = x:230, premium 2.70 loss = y:129 -->
+            <!-- Breakeven 102.70 = x:249 approx -->
+            <polyline points="50,129 249,129 490,40" fill="none" stroke="#58c4a0" stroke-width="2.5" marker-end="url(#arrowG)"/>
+            <!-- Max loss label -->
+            <text x="140" y="124" fill="#e06c75" font-size="10" font-family="monospace">max loss −2.70</text>
+            <!-- Breakeven label -->
+            <line x1="249" y1="95" x2="249" y2="140" stroke="#f0a050" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="250" y="152" fill="#f0a050" font-size="9" font-family="monospace">BE: 102.70</text>
+            <!-- Strike line -->
+            <line x1="230" y1="90" x2="230" y2="140" stroke="#768390" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="232" y="89" fill="#768390" font-size="9" font-family="monospace">K=100</text>
+          </svg>
+        </div>
+        <div class="strat-grid">
+          <div class="strat-card">
+            <div class="strat-card-label">MAX PROFIT</div>
+            <p class="val-green">Unlimited (ยิ่งราคาขึ้นยิ่งกำไร)</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MAX LOSS</div>
+            <p class="val-red">−Premium ที่จ่าย (2.70)</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">BREAK-EVEN</div>
+            <p>Strike + Premium = <strong>102.70</strong></p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MARKET VIEW</div>
+            <p class="val-green">Bullish — คาดราคาขึ้น</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHORT CALL -->
+      <div id="short-call" class="tab-panel">
+        <div class="chart-wrap">
+          <div class="chart-title">SHORT 100 CALL @ 2.70 · P&amp;L AT EXPIRY</div>
+          <svg class="chart" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowR" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#e06c75"/>
+              </marker>
+            </defs>
+            <line x1="50" y1="10" x2="50" y2="175" stroke="#2a3441" stroke-width="1"/>
+            <line x1="50" y1="100" x2="490" y2="100" stroke="#2a3441" stroke-width="1"/>
+            <text x="90" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">85</text>
+            <text x="160" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">95</text>
+            <text x="230" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">100</text>
+            <text x="300" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">105</text>
+            <text x="370" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">110</text>
+            <text x="44" y="72" fill="#58c4a0" font-size="9" font-family="monospace" text-anchor="end">+2.7</text>
+            <text x="44" y="104" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">0</text>
+            <text x="44" y="160" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">-8</text>
+            <!-- flat at +2.70 then drops -->
+            <polyline points="50,72 249,72 490,160" fill="none" stroke="#e06c75" stroke-width="2.5" marker-end="url(#arrowR)"/>
+            <text x="120" y="67" fill="#58c4a0" font-size="10" font-family="monospace">max profit +2.70</text>
+            <line x1="249" y1="65" x2="249" y2="85" stroke="#f0a050" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="250" y="95" fill="#f0a050" font-size="9" font-family="monospace">BE: 102.70</text>
+            <line x1="230" y1="65" x2="230" y2="85" stroke="#768390" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="232" y="63" fill="#768390" font-size="9" font-family="monospace">K=100</text>
+            <text x="380" y="148" fill="#e06c75" font-size="10" font-family="monospace">unlimited loss →</text>
+          </svg>
+        </div>
+        <div class="strat-grid">
+          <div class="strat-card">
+            <div class="strat-card-label">MAX PROFIT</div>
+            <p class="val-green">+Premium ที่รับ (2.70)</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MAX LOSS</div>
+            <p class="val-red">Unlimited (ถ้าราคาขึ้นไม่มีหยุด)</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">BREAK-EVEN</div>
+            <p>Strike + Premium = <strong>102.70</strong></p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MARKET VIEW</div>
+            <p class="val-orange">Neutral/Bearish — คาดราคาไม่ขึ้น</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LONG PUT -->
+      <div id="long-put" class="tab-panel">
+        <div class="chart-wrap">
+          <div class="chart-title">LONG 100 PUT @ 3.70 · P&amp;L AT EXPIRY</div>
+          <svg class="chart" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowG2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#58c4a0"/>
+              </marker>
+            </defs>
+            <line x1="50" y1="10" x2="50" y2="175" stroke="#2a3441" stroke-width="1"/>
+            <line x1="50" y1="100" x2="490" y2="100" stroke="#2a3441" stroke-width="1"/>
+            <text x="90" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">85</text>
+            <text x="160" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">95</text>
+            <text x="230" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">100</text>
+            <text x="300" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">105</text>
+            <text x="44" y="44" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">+8</text>
+            <text x="44" y="104" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">0</text>
+            <text x="44" y="133" fill="#58c4a0" font-size="9" font-family="monospace" text-anchor="end">-3.7</text>
+            <!-- rises from left, flat at -3.70 to right of strike -->
+            <polyline points="50,44 211,133 490,133" fill="none" stroke="#58c4a0" stroke-width="2.5" marker-end="url(#arrowG2)"/>
+            <text x="280" y="128" fill="#e06c75" font-size="10" font-family="monospace">max loss −3.70</text>
+            <line x1="211" y1="125" x2="211" y2="145" stroke="#f0a050" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="148" y="148" fill="#f0a050" font-size="9" font-family="monospace">BE: 96.30</text>
+            <line x1="230" y1="90" x2="230" y2="145" stroke="#768390" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="232" y="89" fill="#768390" font-size="9" font-family="monospace">K=100</text>
+          </svg>
+        </div>
+        <div class="strat-grid">
+          <div class="strat-card">
+            <div class="strat-card-label">MAX PROFIT</div>
+            <p class="val-green">Strike − Premium (ถ้าราคา = 0)</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MAX LOSS</div>
+            <p class="val-red">−Premium ที่จ่าย (3.70)</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">BREAK-EVEN</div>
+            <p>Strike − Premium = <strong>96.30</strong></p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MARKET VIEW</div>
+            <p class="val-red">Bearish — คาดราคาลง</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHORT PUT (CSP) -->
+      <div id="short-put" class="tab-panel">
+        <div class="chart-wrap">
+          <div class="chart-title">SHORT 100 PUT @ 3.70 · P&amp;L AT EXPIRY (= CSP)</div>
+          <svg class="chart" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowR2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#e06c75"/>
+              </marker>
+            </defs>
+            <line x1="50" y1="10" x2="50" y2="175" stroke="#2a3441" stroke-width="1"/>
+            <line x1="50" y1="100" x2="490" y2="100" stroke="#2a3441" stroke-width="1"/>
+            <text x="90" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">85</text>
+            <text x="160" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">95</text>
+            <text x="230" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">100</text>
+            <text x="300" y="190" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">105</text>
+            <text x="44" y="72" fill="#58c4a0" font-size="9" font-family="monospace" text-anchor="end">+3.7</text>
+            <text x="44" y="104" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">0</text>
+            <text x="44" y="155" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">-8</text>
+            <!-- flat at +3.70 from right, then drops to left -->
+            <polyline points="50,155 211,72 490,72" fill="none" stroke="#e06c75" stroke-width="2.5"/>
+            <!-- highlight the CSP max profit zone -->
+            <rect x="211" y="68" width="279" height="8" fill="rgba(88,196,160,0.1)" rx="2"/>
+            <text x="290" y="67" fill="#58c4a0" font-size="10" font-family="monospace">max profit +3.70 ✓</text>
+            <line x1="211" y1="65" x2="211" y2="85" stroke="#f0a050" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="148" y="95" fill="#f0a050" font-size="9" font-family="monospace">BE: 96.30</text>
+            <line x1="230" y1="65" x2="230" y2="85" stroke="#768390" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="232" y="63" fill="#768390" font-size="9" font-family="monospace">K=100</text>
+            <text x="52" y="148" fill="#e06c75" font-size="10" font-family="monospace">loss ↓ ถ้าราคาลงมาก</text>
+          </svg>
+        </div>
+        <div class="strat-grid">
+          <div class="strat-card">
+            <div class="strat-card-label">MAX PROFIT</div>
+            <p class="val-green">+Premium ที่รับ (3.70) — expire OTM</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MAX LOSS</div>
+            <p class="val-red">Strike − Premium (ถ้าราคาตกเป็น 0)</p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">BREAK-EVEN</div>
+            <p>Strike − Premium = <strong>96.30</strong></p>
+          </div>
+          <div class="strat-card">
+            <div class="strat-card-label">MARKET VIEW</div>
+            <p class="val-green">Bullish/Neutral — คาดราคาไม่ลงเกิน BE</p>
+          </div>
+        </div>
+        <div class="note" style="margin-top:12px">
+          <div class="note-label">CSP = Short Put ตรงๆ</div>
+          <p>Cash Secured Put คือ Short Put ที่วางเงินสดค้ำประกันไว้ = หน้าตา P&amp;L เหมือนกันทุกประการ แค่ broker กำหนดว่าต้องมีเงินสดเท่า notional value วาง</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Combination Strategies -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Combination Strategies · รวม Position สร้าง Shape ใหม่</span>
+    </div>
+
+    <p class="body-text">เมื่อรวม options หลาย leg เข้าด้วยกัน P&amp;L shape จะเปลี่ยนไปตามผลรวมของทุก leg ที่ expiry</p>
+
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>STRATEGY</th>
+          <th>LEGS</th>
+          <th>MAX PROFIT</th>
+          <th>MAX LOSS</th>
+          <th>เหมาะเมื่อ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Long Straddle</strong></td>
+          <td>Long Call + Long Put (same strike)</td>
+          <td class="val-green">Unlimited ทั้ง 2 ทาง</td>
+          <td class="val-red">Total Premium (6.40)</td>
+          <td>คาดว่าจะมี big move แต่ไม่รู้ทิศทาง</td>
+        </tr>
+        <tr>
+          <td><strong>Short Straddle</strong></td>
+          <td>Short Call + Short Put (same strike)</td>
+          <td class="val-green">Total Premium (6.40)</td>
+          <td class="val-red">Unlimited ทั้ง 2 ทาง</td>
+          <td>คาดราคาจะ sideways ใน range แคบ</td>
+        </tr>
+        <tr>
+          <td><strong>Short Strangle</strong></td>
+          <td>Short OTM Put + Short OTM Call</td>
+          <td class="val-green">Total Premium (2.70)</td>
+          <td class="val-red">Unlimited ทั้ง 2 ทาง</td>
+          <td>Sideways ใน range กว้างกว่า, premium น้อยกว่า</td>
+        </tr>
+        <tr>
+          <td><strong>Bull Spread (Call)</strong></td>
+          <td>Long lower call + Short higher call</td>
+          <td class="val-green">Limited (spread − debit)</td>
+          <td class="val-red">Limited (debit paid)</td>
+          <td>Bullish แต่อยากจำกัด risk/cost</td>
+        </tr>
+        <tr>
+          <td><strong>Bear Spread (Put)</strong></td>
+          <td>Long higher put + Short lower put</td>
+          <td class="val-green">Limited</td>
+          <td class="val-red">Limited (debit paid)</td>
+          <td>Bearish แต่อยากจำกัด risk/cost</td>
+        </tr>
+        <tr>
+          <td><strong>Ratio Spread</strong></td>
+          <td>Long 1 call + Short N calls (N&gt;1)</td>
+          <td class="val-orange">Limited ที่ short strike</td>
+          <td class="val-red">Unlimited ด้านที่ short มากกว่า</td>
+          <td>ซับซ้อน — ระวัง tail risk</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Straddle Visual -->
+    <div class="chart-wrap">
+      <div class="chart-title">LONG STRADDLE vs SHORT STRADDLE · 100 Call + 100 Put</div>
+      <svg class="chart" viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg">
+        <line x1="50" y1="10" x2="50" y2="165" stroke="#2a3441" stroke-width="1"/>
+        <line x1="50" y1="90" x2="490" y2="90" stroke="#2a3441" stroke-width="1"/>
+        <!-- price labels -->
+        <text x="90" y="176" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">85</text>
+        <text x="160" y="176" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">93.6</text>
+        <text x="230" y="176" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">100</text>
+        <text x="300" y="176" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">106.4</text>
+        <text x="370" y="176" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">110</text>
+        <!-- y labels -->
+        <text x="44" y="94" fill="#768390" font-size="9" font-family="monospace" text-anchor="end">0</text>
+        <text x="44" y="125" fill="#e06c75" font-size="9" font-family="monospace" text-anchor="end">−6.4</text>
+        <!-- LONG STRADDLE (V-shape, green) -->
+        <polyline points="50,30 160,125 230,125 300,125 420,30" fill="none" stroke="#58c4a0" stroke-width="2"/>
+        <!-- LONG STRADDLE BE lines -->
+        <line x1="160" y1="85" x2="160" y2="135" stroke="#58c4a0" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="300" y1="85" x2="300" y2="135" stroke="#58c4a0" stroke-width="1" stroke-dasharray="3,3"/>
+        <!-- SHORT STRADDLE (inverted V, red) -->
+        <polyline points="50,150 160,55 230,55 300,55 420,150" fill="none" stroke="#e06c75" stroke-width="2" stroke-dasharray="5,3"/>
+        <!-- Labels -->
+        <text x="55" y="25" fill="#58c4a0" font-size="10" font-family="monospace">Long Straddle</text>
+        <text x="55" y="165" fill="#e06c75" font-size="10" font-family="monospace">Short Straddle - - -</text>
+        <text x="232" y="120" fill="#e06c75" font-size="9" font-family="monospace">max loss −6.40</text>
+        <text x="232" y="50" fill="#58c4a0" font-size="9" font-family="monospace">max profit +6.40</text>
+      </svg>
+    </div>
+
+    <div class="note">
+      <div class="note-label">Straddle vs Strangle Tradeoff</div>
+      <p><strong>Straddle</strong>: premium สูง แต่ break-even ใกล้กว่า · <strong>Strangle</strong>: premium ต่ำกว่า แต่ต้องการ move ใหญ่กว่าถึงจะกำไร — Natenberg เน้นว่า option traders ต้อง weigh risk vs reward ตลอดเวลา ไม่มีอะไรฟรี</p>
+    </div>
+  </div>
+
+  <!-- Section 4: Expiration Graph Rules -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">กฎการวาด Expiration Graph · 3 ข้อสำคัญ</span>
+    </div>
+
+    <p class="body-text">Natenberg สรุป 3 กฎที่ทำให้วาด P&amp;L diagram ได้เองสำหรับ position ซับซ้อนแค่ไหนก็ตาม:</p>
+
+    <div class="rule-list">
+      <div class="rule-row">
+        <span class="rule-num">1</span>
+        <span class="rule-text">กราฟจะ <strong>"หักมุม" ที่ exercise price เท่านั้น</strong> — ดังนั้นคำนวณ P&amp;L ที่แต่ละ strike price แล้วลากเส้นตรงเชื่อมแต่ละจุด</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">2</span>
+        <span class="rule-text">ถ้า position มี <strong>จำนวน long = short calls (or puts)</strong> ความเสี่ยงด้าน downside (upside) จะจำกัดที่ total debit/credit เท่านั้น</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num">3</span>
+        <span class="rule-text">เหนือ strike สูงสุด options ทุกตัวจะ ITM ทำให้ position ทำตัวเหมือน underlying position (long/short) ตามจำนวน net ของ calls — ใต้ strike ต่ำสุดเหมือนกันสำหรับ puts</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">วิธีใช้ 3 กฎ — ตัวอย่าง</div>
+      <p>Long 1 × 95 call @5.50, Short 3 × 105 calls @1.15 → net debit = −5.50 + 3×1.15 = −2.05<br>
+      ที่ expiry=95: loss 2.05 | ที่ expiry=105: profit 7.95 | เกิน 105: position net short 2 contracts → ขาดทุนไม่จำกัด</p>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ Ratio Spread — Tail Risk</div>
+      <p>ถ้าขาย calls มากกว่าที่ซื้อ (ratio &gt; 1:1) เช่น long 1 / short 3 — เหนือ strike สูง position กลายเป็น net short 2 contracts = ขาดทุนไม่จำกัดถ้าราคาวิ่งขึ้นไปมาก ต้องระวังสำหรับ naked short leg ใน Webull</p>
+    </div>
+  </div>
+
+  <!-- Section 5: Risk/Reward Philosophy -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Risk/Reward Philosophy · ไม่มีอะไรได้มาฟรี</span>
+    </div>
+
+    <p class="body-text">ประเด็นสำคัญที่ Natenberg เน้นมากในบทนี้ — ทุก strategy มี tradeoff:</p>
+
+    <div class="rule-list">
+      <div class="rule-row">
+        <span class="rule-num" style="color:var(--accent3)">!</span>
+        <span class="rule-text"><strong>Buyers of options</strong>: limited risk, unlimited reward — ฟังดูดี แต่ต้องจ่าย premium ทุกครั้ง และ time decay ทำงานสวนทาง</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num" style="color:var(--accent)">!</span>
+        <span class="rule-text"><strong>Sellers of options</strong>: limited reward, unlimited risk — ฟังดูน่ากลัว แต่ probability of profit มักสูงกว่า ถ้าจัดการ position ดี</span>
+      </div>
+      <div class="rule-row">
+        <span class="rule-num" style="color:var(--accent2)">!</span>
+        <span class="rule-text"><strong>Combination strategies</strong>: จำกัด risk ได้ 2 ด้าน แต่ต้องยอมลด max profit ลง — เหมาะกับ income strategies ที่เทรดอยู่</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Practical Application -->
+  <div class="practical">
+    <div class="practical-label">⚡ CONNECT TO YOUR TRADING</div>
+    <p><strong>CSP (Short Put):</strong> P&amp;L หน้าตาเหมือนในแท็บ Short Put ด้านบนเป๊ะ — max profit คือ premium ที่รับ, max loss คือ ถ้าหุ้นตกหนัก ต้องรับหุ้นที่ strike</p>
+    <p><strong>Covered Call บน TE:</strong> = Long stock + Short Call → P&amp;L หน้าตาเหมือน Short Put ตรงๆ (Put-Call Parity ที่จะเรียนในบทหลัง) max profit จำกัดที่ strike + premium</p>
+    <p><strong>Collar = CSP + Covered Call ผสมกัน:</strong> Long Stock + Short Call + Long Put → กราฟจะแบนราบทั้ง 2 ด้าน จำกัดทั้ง profit และ loss ในช่วงแคบ เหมาะกับ TE ที่ volatile มาก</p>
+    <p><strong>Iron Condor (อนาคต):</strong> Short Strangle + Long Strangle = Short Call spread + Short Put spread รวมกัน → กราฟเป็น flat zone ตรงกลาง ขาดทุนจำกัด 2 ข้าง</p>
+  </div>
+
+  <!-- Key Takeaways -->
+  <div class="section" style="margin-top: 28px;">
+    <div class="section-header">
+      <span class="section-num">✓</span>
+      <span class="section-title">สรุปสิ่งที่ต้องจำจากบทนี้</span>
+    </div>
+    <ul class="checklist">
+      <li>Long Call/Put = limited loss, unlimited profit · Short Call/Put = limited profit, unlimited loss</li>
+      <li>Breakeven Call = Strike + Premium · Breakeven Put = Strike − Premium</li>
+      <li>Long Straddle = bet on big move · Short Straddle = bet on sideways</li>
+      <li>Spread = รวม long + short → จำกัด risk ทั้ง 2 ด้าน แต่จำกัด profit ด้วย</li>
+      <li>Expiration graph หักมุมที่ strike เท่านั้น — ใช้กฎ 3 ข้อวาดได้ทุก strategy</li>
+      <li>ทุก strategy มี tradeoff ระหว่าง max profit / max loss / probability — ไม่มีอะไรดีทุกด้าน</li>
+    </ul>
+  </div>
+
+  <br>
+  <center>
+  <a href="index.html" class="nav-btn active">หน้าแรก</a>
+  </center>
+
+  <!-- Footer nav -->
+  <div class="footer-nav">
+    <a href="natenberg_ch1.html" class="nav-btn active">← บทที่ 1 Language</a>
+    <div class="page-indicator">Ch.2 / 20</div>
+    <a href="natenberg_ch3.html" class="nav-btn active">บทที่ 3 →</a>
+  </div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

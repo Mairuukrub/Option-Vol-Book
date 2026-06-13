@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.8 — Volatility Spreads</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Playfair+Display:wght@700&display=swap');
+
+  :root {
+    --bg:       #0b0f14;
+    --surface:  #111820;
+    --surface2: #19222e;
+    --border:   #1f2d3d;
+    --gold:     #f5c842;
+    --gold-dim: #a88a20;
+    --blue:     #4ea8de;
+    --green:    #3fba74;
+    --red:      #e05c5c;
+    --purple:   #a78bfa;
+    --orange:   #fb923c;
+    --cyan:     #22d3ee;
+    --pink:     #f472b6;
+    --text:     #dde5ee;
+    --muted:    #6b7f96;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans Thai',sans-serif; font-size:15px; line-height:1.75; padding-bottom:80px; }
+
+  /* HERO */
+  .hero { background:linear-gradient(135deg,#0b0f14 0%,#111a26 55%,#0c1420 100%); border-bottom:1px solid var(--border); padding:52px 40px 44px; position:relative; overflow:hidden; }
+  .hero::before { content:'Δ⇌'; position:absolute; right:5%; top:50%; transform:translateY(-50%); font-family:'Playfair Display',serif; font-size:180px; color:#ffffff03; pointer-events:none; letter-spacing:-20px; }
+  .hero-eyebrow { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--orange); letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:42px; line-height:1.2; color:#fff; margin-bottom:10px; }
+  .hero h1 span { color:var(--orange); }
+  .hero-sub { color:var(--muted); font-size:14px; max-width:650px; line-height:1.8; }
+  .hero-sub em { color:var(--gold); font-style:normal; }
+  .tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:18px; }
+  .tag { font-family:'IBM Plex Mono',monospace; font-size:11px; padding:3px 10px; border-radius:20px; border:1px solid; }
+  .tag.o { color:var(--orange); border-color:#5a3010; }
+  .tag.g { color:var(--gold);   border-color:var(--gold-dim); }
+  .tag.gr{ color:var(--green);  border-color:#1e4a30; }
+  .tag.b { color:var(--blue);   border-color:#2a4d6a; }
+  .tag.p { color:var(--purple); border-color:#3d2f66; }
+  .tag.c { color:var(--cyan);   border-color:#1a4a5a; }
+  .tag.pk{ color:var(--pink);   border-color:#5a1a3a; }
+
+  /* NAV */
+  .toc { display:flex; flex-wrap:wrap; gap:8px; padding:16px 40px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:99; }
+  .toc a { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); text-decoration:none; padding:5px 11px; border:1px solid var(--border); border-radius:4px; transition:all .2s; }
+  .toc a:hover { color:var(--orange); border-color:#5a3010; background:#1c0e06; }
+
+  /* LAYOUT */
+  .page { max-width:900px; margin:0 auto; padding:0 24px; }
+  section { padding:52px 0 0; }
+
+  /* SECTION HEADER */
+  .sec-head { display:flex; align-items:flex-start; gap:20px; margin-bottom:28px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  .sec-icon { font-family:'Playfair Display',serif; font-size:48px; line-height:1; min-width:58px; text-align:center; flex-shrink:0; padding-top:4px; }
+  .sec-head-text h2 { font-size:24px; font-weight:700; color:#fff; margin-bottom:4px; }
+  .sec-head-text .sub { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+  .sec-head-text .pages { font-size:13px; color:var(--muted); margin-top:2px; }
+
+  p { margin-bottom:12px; color:var(--text); }
+  .lead { font-size:16px; color:#c5d4e4; line-height:1.8; margin-bottom:18px; }
+  h3 { margin:26px 0 14px; color:#c5d4e4; font-size:16px; font-weight:600; }
+  h4 { margin:18px 0 10px; color:#b5c8dc; font-size:14px; font-weight:600; }
+
+  /* CARDS */
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0; }
+  .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:16px 0; }
+  .g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 18px; }
+  .card-title { font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+  .card-body { font-size:13px; color:#b0c0d4; line-height:1.65; }
+  .card.ao { border-color:#5a3010; background:#1c0e06; }
+  .card.ag { border-color:var(--gold-dim); background:#16140a; }
+  .card.agr{ border-color:#1e4a30; background:#0b1c14; }
+  .card.ar { border-color:#4a1e1e; background:#1c0d0d; }
+  .card.ap { border-color:#3d2f66; background:#140f22; }
+  .card.ab { border-color:#2a4d6a; background:#0d1a25; }
+  .card.ac { border-color:#1a4a5a; background:#091520; }
+
+  /* CALLOUT BOXES */
+  .insight { background:#16140a; border:1px solid var(--gold-dim); border-left:4px solid var(--gold); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:14px; color:#d4bc6a; line-height:1.75; }
+  .insight-lbl { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
+  .warn { background:#1c0d0d; border:1px solid #4a1e1e; border-left:4px solid var(--red); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:14px; color:#e0a0a0; line-height:1.75; }
+  .warn-lbl { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--red); text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
+  .note { background:#091520; border:1px solid #1a4a5a; border-left:4px solid var(--cyan); border-radius:8px; padding:14px 18px; margin:18px 0; font-size:14px; color:#90c8dc; line-height:1.75; }
+  .note-lbl { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--cyan); text-transform:uppercase; letter-spacing:2px; margin-bottom:6px; }
+  .webull { background:linear-gradient(135deg,#0b1c14,#0d1a0f); border:1px solid #1e4a30; border-left:4px solid var(--green); border-radius:8px; padding:16px 18px; margin:20px 0; }
+  .webull-lbl { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--green); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .webull-lbl::before { content:'📱'; font-size:14px; }
+  .webull p { color:#9fcfb0; margin-bottom:6px; font-size:14px; }
+  .webull p:last-child { margin-bottom:0; }
+  .webull strong { color:var(--green); }
+
+  /* DEF LINE */
+  .def { background:var(--surface2); border-left:3px solid var(--orange); padding:12px 16px; border-radius:0 6px 6px 0; margin:14px 0; font-size:14px; line-height:1.65; }
+  .def .key { font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--orange); display:block; margin-bottom:4px; font-weight:600; }
+
+  /* PAYOFF DIAGRAM (ASCII-style SVG) */
+  .payoff-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0; }
+  .payoff-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+  .payoff-card h4 { margin:0 0 10px; font-size:14px; }
+  .payoff-svg { width:100%; height:120px; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x:auto; margin:16px 0; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th { background:var(--surface2); color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; padding:9px 12px; text-align:left; border-bottom:1px solid var(--border); }
+  tbody td { padding:9px 12px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:middle; }
+  tbody tr:hover td { background:var(--surface2); }
+  .pos { color:var(--green); font-weight:700; font-size:16px; }
+  .neg { color:var(--red);   font-weight:700; font-size:16px; }
+  .zero{ color:var(--muted); font-size:15px; }
+  td.up { color:var(--green); font-weight:600; }
+  td.dn { color:var(--red);   font-weight:600; }
+  td.mt { color:var(--muted); }
+
+  /* MASTER SENSITIVITY TABLE */
+  .sens-table { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:16px 0; }
+  .sens-head { display:grid; grid-template-columns:1fr 80px 80px 80px 80px; background:var(--surface2); padding:10px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; gap:8px; }
+  .sens-row { display:grid; grid-template-columns:1fr 80px 80px 80px 80px; padding:10px 14px; border-top:1px solid var(--border); gap:8px; align-items:center; }
+  .sens-row:hover { background:var(--surface2); }
+  .sens-name { font-size:13px; font-weight:600; }
+  .sens-cell { text-align:center; font-size:18px; font-weight:700; }
+  .sens-group { padding:6px 14px; background:#13192200; border-top:2px solid var(--border); }
+  .sens-group-lbl { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; }
+
+  /* SPREAD CHOOSER */
+  .chooser { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0; }
+  .ch-box { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:18px; }
+  .ch-condition { font-family:'IBM Plex Mono',monospace; font-size:12px; padding:6px 12px; border-radius:20px; margin-bottom:14px; display:inline-block; }
+  .ch-list { list-style:none; }
+  .ch-list li { font-size:13px; color:#b0c0d4; padding:5px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .ch-list li:last-child { border-bottom:none; }
+  .ch-list li::before { content:'→'; color:var(--muted); font-size:12px; flex-shrink:0; }
+
+  /* DIVIDER */
+  .divider { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); margin:48px 0 0; }
+
+  /* FOOTER */
+  .footer { margin-top:72px; border-top:1px solid var(--border); padding:26px 40px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); }
+
+  @media (max-width:640px) {
+    .hero { padding:34px 18px 30px; } .hero h1 { font-size:28px; }
+    .toc { padding:12px 18px; } .page { padding:0 14px; }
+    .g2,.g3,.g4,.payoff-row,.chooser { grid-template-columns:1fr; }
+    .sens-head,.sens-row { grid-template-columns:1fr 60px 60px 60px; }
+    .sens-head span:nth-child(4),.sens-row span:nth-child(4) { display:none; }
+  }
+
+   .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 14px; }
+  .nav-btn.active { color: var(--accent); border-color: rgba(88,196,160,0.4); }
+  .page-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page">
+    <div class="hero-eyebrow">Natenberg — Option Pricing &amp; Volatility · บทที่ 8</div>
+    <h1>Volatility <span>Spreads</span></h1>
+    <p class="hero-sub">
+      หัวใจของการเทรด options แบบ professional —
+      <em>6 กลยุทธ์หลัก</em> ที่ล้วนเป็น delta-neutral ทั้งสิ้น
+      แตกต่างกันที่ว่าชอบตลาด "เงียบ" หรือ "วิ่ง" และชอบ IV "สูง" หรือ "ต่ำ"
+    </p>
+    <div class="tags">
+      <span class="tag o">Backspread</span>
+      <span class="tag g">Ratio Vertical</span>
+      <span class="tag b">Straddle</span>
+      <span class="tag gr">Strangle</span>
+      <span class="tag p">Butterfly</span>
+      <span class="tag c">Time Spread</span>
+      <span class="tag pk">Condor / Iron Butterfly</span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="toc">
+  <a href="#backspread">Backspread</a>
+  <a href="#ratio">Ratio Vertical</a>
+  <a href="#straddle">Straddle</a>
+  <a href="#strangle">Strangle</a>
+  <a href="#butterfly">Butterfly</a>
+  <a href="#time">Time Spread</a>
+  <a href="#variations">Variations</a>
+  <a href="#sensitivities">Greeks Table</a>
+  <a href="#choosing">เลือก Strategy</a>
+  <a href="#adjustments">Adjustments</a>
+  <a href="#webull-sum">Webull</a>
+</nav>
+
+<div class="page">
+
+<!-- ═══ OVERVIEW ═══ -->
+<section>
+  <p class="lead" style="margin-top:36px;">
+    Volatility spread คือ spread ที่ <strong>delta-neutral (≈0)</strong> ตั้งแต่เริ่มต้น
+    — นักเทรดไม่ได้เดาทิศทาง แต่เดาว่า <strong>ตลาดจะเคลื่อนไหวมากน้อยแค่ไหน</strong>
+    และ <strong>IV จะสูงขึ้นหรือต่ำลง</strong> เทียบกับที่เป็นอยู่ตอนเปิด position
+  </p>
+  <div class="note">
+    <div class="note-lbl">📌 หลักการกำหนด Volatility Spread</div>
+    Spread ทุกชนิดในบทนี้มี <strong>Delta ≈ 0</strong> (delta neutral)<br>
+    Gamma และ Theta จะ <strong>ตรงข้ามกันเสมอ</strong> (positive gamma → negative theta)<br>
+    ความแตกต่างสำคัญคือ <strong>เครื่องหมายของ Gamma และ Vega</strong> ซึ่งบอกว่า spread ชอบตลาดแบบไหน
+  </div>
+</section>
+
+<!-- ═══ BACKSPREAD ═══ -->
+<div class="divider"></div>
+<section id="backspread">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--orange);">↗</div>
+    <div class="sec-head-text">
+      <h2>Backspread (Long Ratio Spread)</h2>
+      <div class="sub">LONG MORE CONTRACTS THAN SHORT</div>
+      <div class="pages">pp. 138–139 · อยากให้ตลาดขยับมาก</div>
+    </div>
+  </div>
+
+  <div class="def">
+    <span class="key">Long options (OTM) มากกว่า Short options (ITM) ในเดือน expiry เดียวกัน</span>
+    Call backspread: Long calls ที่ strike สูงกว่า + Short calls ที่ strike ต่ำกว่า<br>
+    Put backspread: Long puts ที่ strike ต่ำกว่า + Short puts ที่ strike สูงกว่า<br>
+    มักทำสำหรับ <strong style="color:var(--green);">Credit</strong> (เก็บเงินตอนเปิด) เพื่อให้มี floor ถ้าตลาดไม่ขยับ
+  </div>
+
+  <div class="g2">
+    <div class="card ao">
+      <div class="card-title" style="color:var(--orange);">📈 Call Backspread</div>
+      <div class="card-body">
+        <strong>Structure:</strong> Short 1 low-strike call + Long 2 high-strike calls<br><br>
+        <strong>กำไร:</strong> ตลาดพุ่งขึ้นสูง (unlimited upside)<br>
+        <strong>กำไรเล็กน้อย:</strong> ตลาดร่วงลงต่ำกว่า short strike (เก็บ credit)<br>
+        <strong>ขาดทุนสูงสุด:</strong> ตลาดหยุดตรง short strike ตอน expiry<br><br>
+        <em>เลือกถ้า: คาดว่าตลาดจะขึ้นแรง</em>
+      </div>
+    </div>
+    <div class="card ar">
+      <div class="card-title" style="color:var(--red);">📉 Put Backspread</div>
+      <div class="card-body">
+        <strong>Structure:</strong> Short 1 high-strike put + Long 2 low-strike puts<br><br>
+        <strong>กำไร:</strong> ตลาดร่วงลงแรง (unlimited downside profit)<br>
+        <strong>กำไรเล็กน้อย:</strong> ตลาดพุ่งขึ้นสูงกว่า short strike<br>
+        <strong>ขาดทุนสูงสุด:</strong> ตลาดหยุดตรง short strike ตอน expiry<br><br>
+        <em>เลือกถ้า: คาดว่าตลาดจะลงแรง</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card"><div class="card-title" style="color:var(--purple);">Gamma</div><div class="card-body" style="font-size:20px; color:var(--green); font-weight:700;">+ บวก</div></div>
+    <div class="card"><div class="card-title" style="color:var(--blue);">Theta</div><div class="card-body" style="font-size:20px; color:var(--red); font-weight:700;">− ลบ</div></div>
+    <div class="card"><div class="card-title" style="color:var(--green);">Vega</div><div class="card-body" style="font-size:20px; color:var(--green); font-weight:700;">+ บวก</div></div>
+  </div>
+  <p style="font-size:13px; color:var(--muted); margin-top:-8px;">ชอบ: ตลาดเคลื่อนไหวมาก + IV สูงขึ้น | ไม่ชอบ: ตลาดเงียบ + เวลาผ่านไป</p>
+</section>
+
+<!-- ═══ RATIO VERTICAL ═══ -->
+<div class="divider"></div>
+<section id="ratio">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--gold);">▲</div>
+    <div class="sec-head-text">
+      <h2>Ratio Vertical Spread (Front Spread)</h2>
+      <div class="sub">SHORT MORE CONTRACTS THAN LONG — OPPOSITE OF BACKSPREAD</div>
+      <div class="pages">pp. 139–141 · อยากให้ตลาดทรงตัว</div>
+    </div>
+  </div>
+
+  <div class="def">
+    <span class="key">Short options (OTM) มากกว่า Long options (ITM/ATM) ในเดือน expiry เดียวกัน</span>
+    Call ratio vertical: Long calls ที่ strike ต่ำกว่า + Short calls ที่ strike สูงกว่า (มากกว่า)<br>
+    Put ratio vertical: Long puts ที่ strike สูงกว่า + Short puts ที่ strike ต่ำกว่า (มากกว่า)<br>
+    กำไรสูงสุด: ราคา expire ที่ short option strike | ความเสี่ยง: ไม่จำกัดด้านที่ short
+  </div>
+
+  <div class="g2">
+    <div class="card ag">
+      <div class="card-title" style="color:var(--gold);">Call Ratio Vertical Spread</div>
+      <div class="card-body">
+        Long 1 lower-strike call + Short 2+ higher-strike calls<br><br>
+        <strong>กำไรสูงสุด:</strong> ราคา = higher strike ตอน expiry<br>
+        <strong>ขาดทุนไม่จำกัด:</strong> ตลาดพุ่งขึ้นแรงเกิน short strike<br>
+        <strong>ขาดทุนจำกัด:</strong> ตลาดร่วงลง (long call worthless)<br><br>
+        <em>เลือกถ้า: คาดว่าตลาดจะทรงตัว แต่กังวลตลาดร่วง</em>
+      </div>
+    </div>
+    <div class="card ag">
+      <div class="card-title" style="color:var(--gold);">Put Ratio Vertical Spread</div>
+      <div class="card-body">
+        Long 1 higher-strike put + Short 2+ lower-strike puts<br><br>
+        <strong>กำไรสูงสุด:</strong> ราคา = lower strike ตอน expiry<br>
+        <strong>ขาดทุนไม่จำกัด:</strong> ตลาดร่วงลงแรงเกิน short strike<br>
+        <strong>ขาดทุนจำกัด:</strong> ตลาดพุ่งขึ้น (long put worthless)<br><br>
+        <em>เลือกถ้า: คาดว่าตลาดจะทรงตัว แต่กังวลตลาดขึ้น</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card"><div class="card-title" style="color:var(--purple);">Gamma</div><div class="card-body" style="font-size:20px; color:var(--red); font-weight:700;">− ลบ</div></div>
+    <div class="card"><div class="card-title" style="color:var(--blue);">Theta</div><div class="card-body" style="font-size:20px; color:var(--green); font-weight:700;">+ บวก ✓</div></div>
+    <div class="card"><div class="card-title" style="color:var(--green);">Vega</div><div class="card-body" style="font-size:20px; color:var(--red); font-weight:700;">− ลบ</div></div>
+  </div>
+  <p style="font-size:13px; color:var(--muted); margin-top:-8px;">ชอบ: ตลาดทรงตัว + IV ลดลง + เวลาผ่านไป | ไม่ชอบ: ตลาดวิ่งแรง</p>
+
+  <div class="warn">
+    <div class="warn-lbl">⚠ Short Gamma + Naked Risk</div>
+    Ratio vertical มี <strong>unlimited risk</strong> ด้านที่ short options ไม่มี coverage<br>
+    Webull Thailand อาจต้องการ margin สูงมากสำหรับ position นี้ หรืออาจไม่อนุญาตเลย
+    ถ้าจะใช้ต้องเข้าใจว่า loss ไม่มี cap
+  </div>
+</section>
+
+<!-- ═══ STRADDLE ═══ -->
+<div class="divider"></div>
+<section id="straddle">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--blue);">◇</div>
+    <div class="sec-head-text">
+      <h2>Straddle</h2>
+      <div class="sub">CALL + PUT AT SAME STRIKE &amp; EXPIRY</div>
+      <div class="pages">pp. 141–143 · เดิมพันว่าตลาดจะขยับ หรือจะไม่ขยับ</div>
+    </div>
+  </div>
+
+  <div class="def">
+    <span class="key">Long/Short call + Long/Short put ที่ strike เดิม expiry เดิม</span>
+    Long straddle = Buy call + Buy put (same strike) → กำไรถ้าตลาดขยับมากพอในทิศทางใดก็ได้<br>
+    Short straddle = Sell call + Sell put (same strike) → กำไรถ้าตลาดอยู่ใกล้ strike จนหมดอายุ
+  </div>
+
+  <div class="payoff-row">
+    <div class="payoff-card">
+      <h4 style="color:var(--green);">Long Straddle — V shape ↗↙</h4>
+      <svg class="payoff-svg" viewBox="0 0 260 120">
+        <line x1="0" y1="80" x2="260" y2="80" stroke="#1f2d3d" stroke-width="1"/>
+        <line x1="130" y1="0" x2="130" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <polyline points="0,20 130,100 260,20" fill="none" stroke="#3fba74" stroke-width="2.5"/>
+        <text x="126" y="112" font-size="10" fill="#6b7f96" font-family="monospace">strike</text>
+        <text x="4" y="16" font-size="10" fill="#3fba74">profit ∞</text>
+        <text x="180" y="16" font-size="10" fill="#3fba74">profit ∞</text>
+        <text x="100" y="118" font-size="9" fill="#e05c5c">max loss</text>
+      </svg>
+      <div class="card-body" style="margin-top:8px;">
+        Gamma: <span style="color:var(--green);">+</span> &nbsp;|&nbsp; Theta: <span style="color:var(--red);">−</span> &nbsp;|&nbsp; Vega: <span style="color:var(--green);">+</span><br>
+        ชอบ: ตลาดขยับมาก + IV สูง
+      </div>
+    </div>
+    <div class="payoff-card">
+      <h4 style="color:var(--red);">Short Straddle — ∧ shape</h4>
+      <svg class="payoff-svg" viewBox="0 0 260 120">
+        <line x1="0" y1="40" x2="260" y2="40" stroke="#1f2d3d" stroke-width="1"/>
+        <line x1="130" y1="0" x2="130" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <polyline points="0,110 130,20 260,110" fill="none" stroke="#e05c5c" stroke-width="2.5"/>
+        <text x="126" y="112" font-size="10" fill="#6b7f96" font-family="monospace">strike</text>
+        <text x="90" y="16" font-size="10" fill="#3fba74">max profit</text>
+        <text x="2" y="110" font-size="10" fill="#e05c5c">loss ∞</text>
+        <text x="210" y="110" font-size="10" fill="#e05c5c">loss ∞</text>
+      </svg>
+      <div class="card-body" style="margin-top:8px;">
+        Gamma: <span style="color:var(--red);">−</span> &nbsp;|&nbsp; Theta: <span style="color:var(--green);">+</span> &nbsp;|&nbsp; Vega: <span style="color:var(--red);">−</span><br>
+        ชอบ: ตลาดทรงตัว + IV ต่ำลง
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-lbl">💡 Straddle vs Backspread / Ratio Vertical</div>
+    Long straddle มีลักษณะเหมือน backspread — ทั้งคู่ positive gamma, positive vega<br>
+    Short straddle มีลักษณะเหมือน ratio vertical spread — ทั้งคู่ negative gamma, negative vega<br><br>
+    ความต่าง: straddle ใช้ call + put ที่ strike เดิม ส่วน backspread/ratio vertical ใช้ call อย่างเดียว (หรือ put อย่างเดียว)
+  </div>
+</section>
+
+<!-- ═══ STRANGLE ═══ -->
+<div class="divider"></div>
+<section id="strangle">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--green);">⟨⟩</div>
+    <div class="sec-head-text">
+      <h2>Strangle</h2>
+      <div class="sub">CALL + PUT AT DIFFERENT STRIKES (OTM OPTIONS)</div>
+      <div class="pages">pp. 143–145 · เหมือน straddle แต่ต้องการการขยับมากกว่า</div>
+    </div>
+  </div>
+
+  <div class="def">
+    <span class="key">Long/Short OTM call + Long/Short OTM put — คนละ strike แต่ expiry เดิม</span>
+    Convention: Strangle หมายถึง OTM options เสมอ<br>
+    June 95/105 strangle = Long Jun 95 put + Long Jun 105 call (ถ้า underlying อยู่ที่ 100)<br>
+    ถ้า options ทั้งคู่เป็น ITM เรียกว่า "Guts"
+  </div>
+
+  <div class="payoff-row">
+    <div class="payoff-card">
+      <h4 style="color:var(--green);">Long Strangle</h4>
+      <svg class="payoff-svg" viewBox="0 0 260 120">
+        <line x1="0" y1="80" x2="260" y2="80" stroke="#1f2d3d" stroke-width="1"/>
+        <line x1="90" y1="0" x2="90" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="170" y1="0" x2="170" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <polyline points="0,20 90,95 170,95 260,20" fill="none" stroke="#3fba74" stroke-width="2.5"/>
+        <text x="82" y="112" font-size="9" fill="#6b7f96">put</text>
+        <text x="162" y="112" font-size="9" fill="#6b7f96">call</text>
+        <text x="4" y="16" font-size="10" fill="#3fba74">∞</text>
+        <text x="230" y="16" font-size="10" fill="#3fba74">∞</text>
+      </svg>
+      <div class="card-body" style="margin-top:8px;">
+        ต้องการการขยับมากกว่า straddle<br>
+        Max loss = ช่วงระหว่าง strikes (ถ้าราคาอยู่ใน range)
+      </div>
+    </div>
+    <div class="payoff-card">
+      <h4 style="color:var(--red);">Short Strangle</h4>
+      <svg class="payoff-svg" viewBox="0 0 260 120">
+        <line x1="0" y1="40" x2="260" y2="40" stroke="#1f2d3d" stroke-width="1"/>
+        <line x1="90" y1="0" x2="90" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="170" y1="0" x2="170" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <polyline points="0,110 90,30 170,30 260,110" fill="none" stroke="#e05c5c" stroke-width="2.5"/>
+        <text x="82" y="112" font-size="9" fill="#6b7f96">put</text>
+        <text x="162" y="112" font-size="9" fill="#6b7f96">call</text>
+        <text x="110" y="22" font-size="10" fill="#3fba74">max profit</text>
+      </svg>
+      <div class="card-body" style="margin-top:8px;">
+        Profit range กว้างกว่า short straddle<br>
+        แต่ risk ไม่จำกัดทั้งสองทาง
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-lbl">💡 Leverage สูงสุดของ Strangle</div>
+    Natenberg: สตรังเกิลเป็น <em>"the most highly leveraged of all option positions"</em><br>
+    เพราะซื้อ/ขาย OTM options ซึ่งถูกที่สุด → ถ้าตลาดวิ่งไปไกล long strangle ได้กำไรเป็นเท่า<br>
+    แต่ถ้าไม่วิ่ง → เสียค่า premium เร็วมาก (theta decay แรง)
+  </div>
+</section>
+
+<!-- ═══ BUTTERFLY ═══ -->
+<div class="divider"></div>
+<section id="butterfly">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--purple);">🦋</div>
+    <div class="sec-head-text">
+      <h2>Butterfly (+ Iron Butterfly + Condor)</h2>
+      <div class="sub">3-LEGGED SPREAD AT 3 EQUALLY SPACED STRIKES</div>
+      <div class="pages">pp. 145–158 · bounded risk + bounded reward</div>
+    </div>
+  </div>
+
+  <div class="def">
+    <span class="key">Ratio 1×2×1 — 3 strikes เท่ากันห่าง, all same type, same expiry</span>
+    Long butterfly: Long wing ต่ำ + Short 2× body กลาง + Long wing สูง → max profit ที่ body strike<br>
+    Short butterfly: Short wing ต่ำ + Long 2× body กลาง + Short wing สูง → profit ถ้าราคาวิ่งออกนอก wings
+  </div>
+
+  <div class="payoff-row">
+    <div class="payoff-card">
+      <h4 style="color:var(--gold);">Long Butterfly — ▲ shape</h4>
+      <svg class="payoff-svg" viewBox="0 0 260 120">
+        <line x1="0" y1="90" x2="260" y2="90" stroke="#1f2d3d" stroke-width="1"/>
+        <line x1="65" y1="0" x2="65" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="130" y1="0" x2="130" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="195" y1="0" x2="195" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <polyline points="0,90 65,90 130,20 195,90 260,90" fill="none" stroke="#f5c842" stroke-width="2.5"/>
+        <text x="56" y="112" font-size="9" fill="#6b7f96">low</text>
+        <text x="122" y="112" font-size="9" fill="#6b7f96">mid</text>
+        <text x="187" y="112" font-size="9" fill="#6b7f96">high</text>
+        <text x="110" y="16" font-size="10" fill="#3fba74">max profit</text>
+      </svg>
+      <div class="card-body" style="margin-top:8px;">
+        Max loss = premium paid (เกิดถ้าราคา &lt; low หรือ &gt; high)<br>
+        Max profit = ช่วงห่าง strikes − premium paid<br>
+        Gamma: − | Theta: + | Vega: −
+      </div>
+    </div>
+    <div class="payoff-card">
+      <h4 style="color:var(--purple);">Short Butterfly — ▽ shape</h4>
+      <svg class="payoff-svg" viewBox="0 0 260 120">
+        <line x1="0" y1="30" x2="260" y2="30" stroke="#1f2d3d" stroke-width="1"/>
+        <line x1="65" y1="0" x2="65" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="130" y1="0" x2="130" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <line x1="195" y1="0" x2="195" y2="120" stroke="#1f2d3d" stroke-width="1" stroke-dasharray="4"/>
+        <polyline points="0,30 65,30 130,100 195,30 260,30" fill="none" stroke="#a78bfa" stroke-width="2.5"/>
+        <text x="56" y="112" font-size="9" fill="#6b7f96">low</text>
+        <text x="122" y="112" font-size="9" fill="#6b7f96">mid</text>
+        <text x="187" y="112" font-size="9" fill="#6b7f96">high</text>
+        <text x="4" y="24" font-size="10" fill="#3fba74">max profit</text>
+      </svg>
+      <div class="card-body" style="margin-top:8px;">
+        Max profit = credit received (ราคาวิ่งออกนอก wings)<br>
+        Max loss = ช่วงห่าง strikes − credit received<br>
+        Gamma: + | Theta: − | Vega: +
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-lbl">🔑 Long Butterfly ≈ Ratio Vertical | Short Butterfly ≈ Backspread</div>
+    Long butterfly (market quiet) ↔ ratio vertical spread (market quiet) → ทั้งคู่ short gamma<br>
+    Short butterfly (market moves) ↔ backspread (market moves) → ทั้งคู่ long gamma<br><br>
+    ข้อดีของ butterfly vs straddle: <strong>bounded risk</strong> — ขาดทุนสูงสุดจำกัด<br>
+    ข้อเสีย: กำไรสูงสุดก็จำกัดเช่นกัน และต้องการราคาหยุดที่ body strike พอดี<br><br>
+    Natenberg: "A trader should never confuse size and risk — risk depends on the characteristics of the strategy, not the size."
+  </div>
+
+  <!-- Iron Butterfly + Condor -->
+  <h3>Variations: Iron Butterfly &amp; Condor</h3>
+  <div class="g2">
+    <div class="card ap">
+      <div class="card-title" style="color:var(--purple);">Iron Butterfly</div>
+      <div class="card-body">
+        <strong>ไม่ใช่ pure butterfly</strong> — สร้างจาก straddle + strangle<br><br>
+        Long iron butterfly = Buy straddle + Sell wider strangle<br>
+        Short iron butterfly = Sell straddle + Buy wider strangle<br><br>
+        <strong>Long iron butterfly ≡ Short butterfly</strong> (ผลลัพธ์เดิม, ใช้ puts+calls ต่าง strike)
+      </div>
+    </div>
+    <div class="card ac">
+      <div class="card-title" style="color:var(--cyan);">Condor</div>
+      <div class="card-body">
+        <strong>Butterfly ที่ขยาย body ออก</strong> — ใช้ 4 strikes ติดกัน<br><br>
+        Long condor: Long wing ต่ำ + Short body สองตัว + Long wing สูง<br>
+        กำไรสูงสุดเมื่อราคาอยู่ <em>ระหว่าง</em> 2 body strikes<br><br>
+        ข้อดีเหนือ butterfly: profit range กว้างกว่า แลกกับ max profit ต่ำกว่า
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TIME SPREAD ═══ -->
+<div class="divider"></div>
+<section id="time">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--cyan);">⟳</div>
+    <div class="sec-head-text">
+      <h2>Time Spread (Calendar / Horizontal)</h2>
+      <div class="sub">SAME STRIKE, DIFFERENT EXPIRY DATES</div>
+      <div class="pages">pp. 148–157 · เล่น theta decay ระหว่าง expiry ต่างกัน</div>
+    </div>
+  </div>
+
+  <div class="def">
+    <span class="key">Long-term option + Short short-term option ที่ strike เดิม, ประเภทเดิม</span>
+    Long time spread = Buy long-term option + Sell short-term option → ต้องการตลาดทรงตัว<br>
+    Short time spread = Buy short-term option + Sell long-term option → ต้องการตลาดวิ่ง<br>
+    เรียกได้อีกว่า: calendar spread, horizontal spread
+  </div>
+
+  <div class="g2">
+    <div class="card ac">
+      <div class="card-title" style="color:var(--cyan);">📅 Long Time Spread</div>
+      <div class="card-body">
+        Long long-term + Short short-term<br><br>
+        <strong>กำไร:</strong> ตลาดทรงตัวใกล้ strike → short-term expires worthless, long-term ยังมีค่า<br>
+        <strong>ขาดทุน:</strong> ตลาดวิ่งไกล → ทั้งคู่ lose time value → spread ยุบ<br><br>
+        Theta: + (ได้จาก short-term decay เร็วกว่า)<br>
+        Vega: <strong style="color:var(--green);">+ (unique!)</strong> — long-term vega &gt; short-term vega
+      </div>
+    </div>
+    <div class="card ao">
+      <div class="card-title" style="color:var(--orange);">📅 Short Time Spread</div>
+      <div class="card-body">
+        Short long-term + Long short-term<br><br>
+        <strong>กำไร:</strong> ตลาดวิ่งแรง → ทั้งคู่ lose time value แต่ short long-term เสียน้อยกว่า<br>
+        <strong>ขาดทุน:</strong> ตลาดทรงตัว → short-term decay เร็วกว่า<br><br>
+        Gamma: + &nbsp;|&nbsp; Theta: − &nbsp;|&nbsp; Vega: <strong style="color:var(--red);">−</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-lbl">🔑 Long Time Spread — Greek ที่ผิดปกติ (Unique!)</div>
+    Long time spread เป็น spread เดียวที่มี <strong>Gamma ลบ + Vega บวก</strong><br><br>
+    ปกติ: positive vega ไปพร้อมกับ positive gamma (backspread, straddle, strangle)<br>
+    แต่ time spread ทำลาย pattern นี้ — เพราะ vega ของ options ขึ้นอยู่กับ <em>time to expiry</em><br>
+    Long-term option มี vega สูงกว่า short-term → net positive vega<br>
+    แต่ ATM option ใกล้ expiry มี gamma สูงมาก → short-term gamma &gt; long-term gamma → net negative gamma<br><br>
+    <strong>สรุป: Long time spread = ชอบ IV ขึ้น + ตลาดทรงตัว (ไม่ธรรมดา!)</strong>
+  </div>
+
+  <!-- Time Spread Mechanics Table -->
+  <h3>Time Spread — ผลของ Time Passage (Figure 8-13)</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Time to Expiry (Long/Short)</th><th>Long-term Option</th><th>Short-term Option</th><th>Spread Value</th></tr></thead>
+      <tbody>
+        <tr><td>6 months / 3 months</td><td>7½</td><td>6</td><td>1½ (เริ่มต้น)</td></tr>
+        <tr><td>5 months / 2 months</td><td>7¼</td><td>5</td><td class="up">2¼ (กว้างขึ้น)</td></tr>
+        <tr><td>4 months / 1 month</td><td>6¾</td><td>3</td><td class="up">3¾ (กว้างขึ้น)</td></tr>
+        <tr><td>3 months / 0 (expiry)</td><td>6</td><td>0</td><td class="up">6 (กว้างสุด)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:13px; color:var(--muted);">ตลาดทรงตัว — short-term option decay เร็วกว่า → spread value ขยายตลอด จนถึง max value ตอน short-term expire</p>
+
+  <div class="note">
+    <div class="note-lbl">📌 Time Spread + IV Relationship</div>
+    Long time spread มี <strong>positive vega</strong> เพราะ long-term option ไวต่อ IV มากกว่า short-term<br><br>
+    ถ้า IV เพิ่มจาก 20% → 25%: short-term option เพิ่ม ½ point, long-term เพิ่ม 1 point → spread กว้างขึ้น 50%<br><br>
+    <strong>กฎง่ายๆ:</strong><br>
+    Long time spread: ทำกำไรได้ดีเมื่อ <em>IV ต่ำแต่คาดว่าจะขึ้น</em><br>
+    Short time spread: ทำกำไรได้ดีเมื่อ <em>IV สูงแต่คาดว่าจะลง</em>
+  </div>
+</section>
+
+<!-- ═══ VARIATIONS ═══ -->
+<div class="divider"></div>
+<section id="variations">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--pink); font-size:36px; padding-top:8px;">⋮</div>
+    <div class="sec-head-text">
+      <h2>Variations: Diagonal, Christmas Tree, Condor</h2>
+      <div class="sub">OTHER SPREAD CONSTRUCTIONS</div>
+      <div class="pages">pp. 157–159</div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title" style="color:var(--pink);">Diagonal Spread</div>
+      <div class="card-body">เหมือน Time Spread แต่ใช้ <strong>คนละ strike</strong> ด้วย (ต่าง expiry + ต่าง strike)<br><br>มีลักษณะใกล้เคียง Time Spread แต่มี directional bias เพิ่มเติม</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--pink);">Christmas Tree</div>
+      <div class="card-body">Spread 3 legs แต่ ratio ไม่เท่ากัน (ไม่ใช่ 1×2×1)<br><br>เป็น type ของ backspread หรือ ratio vertical ที่มีขา 3 ขา แทนที่จะเป็น 2</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--cyan);">Condor</div>
+      <div class="card-body">Butterfly ที่ split body เป็น 2 strikes ต่างกัน<br><br>4 strikes: A-B-C-D ติดกัน (equally spaced)<br>Long condor = Long A + Short B + Short C + Long D<br>Profit range: B–C (กว้างกว่า butterfly)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SENSITIVITIES TABLE ═══ -->
+<div class="divider"></div>
+<section id="sensitivities">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--gold); font-size:34px; padding-top:10px;">Fig<br>8-19</div>
+    <div class="sec-head-text">
+      <h2>Spread Sensitivities — ตารางสรุป Greeks</h2>
+      <div class="sub">NATENBERG FIGURE 8-19 — THE MASTER REFERENCE</div>
+      <div class="pages">pp. 159–161 · ตารางที่ต้องจำ</div>
+    </div>
+  </div>
+
+  <div class="sens-table">
+    <div class="sens-head">
+      <span>Spread Type</span>
+      <span style="text-align:center;">Delta</span>
+      <span style="text-align:center;">Gamma</span>
+      <span style="text-align:center;">Theta</span>
+      <span style="text-align:center;">Vega</span>
+    </div>
+
+    <!-- Group 1: Long premium -->
+    <div class="sens-group"><span class="sens-group-lbl">Long Premium — ชอบตลาดวิ่ง + IV ขึ้น</span></div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--orange);">Backspread</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+    </div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--blue);">Long Straddle</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+    </div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--green);">Long Strangle</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+    </div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--purple);">Short Butterfly</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+    </div>
+    <div class="sens-row" style="border-left:3px solid var(--cyan);">
+      <span class="sens-name" style="color:var(--cyan);">Short Time Spread</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell neg" style="color:var(--red);">−</span>
+    </div>
+
+    <!-- Group 2: Short premium -->
+    <div class="sens-group" style="margin-top:4px;"><span class="sens-group-lbl">Short Premium — ชอบตลาดเงียบ + IV ลง</span></div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--gold);">Ratio Vertical</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+    </div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--blue);">Short Straddle</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+    </div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--green);">Short Strangle</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+    </div>
+    <div class="sens-row">
+      <span class="sens-name" style="color:var(--purple);">Long Butterfly</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell neg">−</span>
+    </div>
+
+    <!-- Unique -->
+    <div class="sens-group" style="margin-top:4px;"><span class="sens-group-lbl">Unique — Gamma/Vega แยกทิศกัน</span></div>
+    <div class="sens-row" style="border-left:3px solid var(--cyan); background:#091520;">
+      <span class="sens-name" style="color:var(--cyan);">Long Time Spread ⭐</span>
+      <span class="sens-cell zero">0</span>
+      <span class="sens-cell neg">−</span>
+      <span class="sens-cell pos">+</span>
+      <span class="sens-cell pos" style="color:var(--green);">+</span>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-lbl">🔑 กฎ Greek ของ Spread</div>
+    1. Delta ≈ 0 เสมอ (นั่นแหละคือ "volatility spread")<br>
+    2. Gamma และ Theta <strong>ตรงข้ามกันเสมอ</strong> — ไม่มียกเว้น<br>
+    3. Positive gamma = "Long premium" = ชอบตลาดวิ่ง<br>
+    4. Negative gamma = "Short premium" = ชอบตลาดเงียบ<br>
+    5. <strong>Long Time Spread เป็นข้อยกเว้นเดียว</strong>ที่ negative gamma แต่ positive vega (ชอบ IV ขึ้น)
+  </div>
+</section>
+
+<!-- ═══ CHOOSING STRATEGY ═══ -->
+<div class="divider"></div>
+<section id="choosing">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--green); font-size:34px; padding-top:10px;">🎯</div>
+    <div class="sec-head-text">
+      <h2>Choosing an Appropriate Strategy</h2>
+      <div class="sub">WHEN TO USE WHICH SPREAD — THE DECISION FRAMEWORK</div>
+      <div class="pages">pp. 161–169 · เลือก spread จาก IV ที่เห็นในตลาด</div>
+    </div>
+  </div>
+
+  <p class="lead">หลักการง่ายๆ: ถ้า IV ต่ำ (options ถูก) → ซื้อ options → positive vega | ถ้า IV สูง (options แพง) → ขาย options → negative vega</p>
+
+  <div class="chooser">
+    <div class="ch-box" style="border-color:#1e4a30; background:#0b1c14;">
+      <div class="ch-condition" style="background:#1e4a30; color:var(--green);">📉 IV ต่ำกว่า Theoretical (Options ถูก)</div>
+      <p style="font-size:13px; color:#9fcfb0; margin-bottom:12px;">ซื้อ options ที่ underpriced — หวัง IV จะขึ้น (positive vega)</p>
+      <ul class="ch-list">
+        <li><strong style="color:var(--orange);">Backspread</strong> — long more options</li>
+        <li><strong style="color:var(--blue);">Long Straddle</strong> — buy both</li>
+        <li><strong style="color:var(--green);">Long Strangle</strong> — buy OTM both</li>
+        <li><strong style="color:var(--purple);">Short Butterfly</strong> — sell body, buy wings</li>
+        <li><strong style="color:var(--cyan);">Long Time Spread</strong> — buy longer dated</li>
+      </ul>
+    </div>
+    <div class="ch-box" style="border-color:#4a1e1e; background:#1c0d0d;">
+      <div class="ch-condition" style="background:#4a1e1e; color:var(--red);">📈 IV สูงกว่า Theoretical (Options แพง)</div>
+      <p style="font-size:13px; color:#e0a0a0; margin-bottom:12px;">ขาย options ที่ overpriced — หวัง IV จะลง (negative vega)</p>
+      <ul class="ch-list">
+        <li><strong style="color:var(--gold);">Ratio Vertical</strong> — sell more options</li>
+        <li><strong style="color:var(--blue);">Short Straddle</strong> — sell both</li>
+        <li><strong style="color:var(--green);">Short Strangle</strong> — sell OTM both</li>
+        <li><strong style="color:var(--purple);">Long Butterfly</strong> — buy body, sell wings</li>
+        <li><strong style="color:var(--orange);">Short Time Spread</strong> — sell longer dated</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    <div class="note-lbl">📌 Time Spread กับ IV — กฎพิเศษ</div>
+    <strong>Long time spread:</strong> ทำกำไรดีเมื่อ <em>"IV ต่ำและคาดว่าจะขึ้น"</em><br>
+    <strong>Short time spread:</strong> ทำกำไรดีเมื่อ <em>"IV สูงและคาดว่าจะลง"</em><br><br>
+    Natenberg quote: <em>"Long time spreads are likely to be profitable when implied volatility is low but is expected to rise; short time spreads are likely to be profitable when implied volatility is high but is expected to fall."</em>
+  </div>
+</section>
+
+<!-- ═══ ADJUSTMENTS ═══ -->
+<div class="divider"></div>
+<section id="adjustments">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--muted); font-size:34px; padding-top:10px;">⚙</div>
+    <div class="sec-head-text">
+      <h2>Adjustments</h2>
+      <div class="sub">WHEN &amp; HOW TO RE-DELTA-HEDGE</div>
+      <div class="pages">pp. 168–170</div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card agr">
+      <div class="card-title" style="color:var(--green);">① Adjust ตามช่วงเวลา</div>
+      <div class="card-body">Adjust ทุกวัน, ทุกสัปดาห์ หรือทุกเดือน ตามที่วาง plan ไว้<br><br>เหมาะถ้า volatility measure ด้วย daily changes</div>
+    </div>
+    <div class="card ag">
+      <div class="card-title" style="color:var(--gold);">② Adjust เมื่อ delta เกิน limit</div>
+      <div class="card-body">กำหนด delta threshold เช่น ±200, ±500 deltas<br><br>ถ้า delta เกิน limit → adjust ทันที ไม่ว่าเวลาจะผ่านไปเท่าไหร่</div>
+    </div>
+    <div class="card ab">
+      <div class="card-title" style="color:var(--blue);">③ Adjust by "feel"</div>
+      <div class="card-body">ใช้ market sense — ถ้าเชื่อว่า support อยู่ที่ระดับนี้ อาจไม่ adjust แม้ delta เกิน<br><br>ต้องการ market experience สูง</div>
+    </div>
+  </div>
+
+  <p style="font-size:14px; color:#b0c0d4; margin-top:4px;">ในทางปฏิบัติ traders ส่วนใหญ่ใช้ผสมผสาน — มี limit แต่ก็ใช้ market sense ประกอบด้วย</p>
+</section>
+
+<!-- ═══ WEBULL SUMMARY ═══ -->
+<div class="divider"></div>
+<section id="webull-sum">
+  <div class="sec-head">
+    <div class="sec-icon" style="color:var(--green); font-size:32px; padding-top:10px;">📱</div>
+    <div class="sec-head-text">
+      <h2>Webull Thailand — Chapter 8 Applications</h2>
+      <div class="sub">CONNECTING THEORY TO YOUR ACTUAL PORTFOLIO</div>
+      <div class="pages">~$2,000 capital · Webull constraints</div>
+    </div>
+  </div>
+
+  <div class="webull">
+    <div class="webull-lbl">CSP = Short Ratio Vertical Put (ทำได้จริง)</div>
+    <p>CSP = Short put เดี่ยว (ratio 1:0) = กรณีพิเศษของ ratio vertical ที่ไม่มีขา long put<br>
+    มี <strong>negative gamma + positive theta + negative vega</strong> — ชอบ IV ลด + ตลาดทรงตัว</p>
+    <p>ตาม Ch.8: CSP ทำกำไรดีเมื่อ <strong>IV สูงและคาดว่าจะลด</strong> → ยิ่งยืนยันว่าควรเลือก CSP ตอน IVR สูง (&gt;30-40%)</p>
+  </div>
+
+  <div class="webull">
+    <div class="webull-lbl">Straddle/Strangle — บน Webull ทำได้มั้ย?</div>
+    <p>Long straddle/strangle ต้องซื้อ call + put พร้อมกัน — <strong>ทำได้</strong> แต่ต้องใช้ capital สูง</p>
+    <p>Short straddle/strangle บน Webull Thailand อาจต้องการ margin level สูง หรืออาจถูก restrict เพราะ unlimited risk ทั้งสองด้าน — <strong>ควรตรวจสอบ margin requirement ก่อน</strong></p>
+  </div>
+
+  <div class="webull">
+    <div class="webull-lbl">UUUU LEAPS — Long Straddle/Backspread concept</div>
+    <p>Long LEAPS call ที่ IVR ต่ำ (5%) = ซื้อ options ถูก = positive vega<br>
+    ตาม Figure 8-19: นี่คือ "long premium" ชุดเดิมกับ backspread/long straddle<br>
+    เพียงแต่ทำแค่ขา long เดียว ไม่ได้ hedge ด้วยขา short</p>
+    <p>Catalyst: China magnet ban → IV ควรขึ้น → vega ดัน LEAPS ราคาสูง → กลยุทธ์ถูกต้องตาม Ch.8 framework</p>
+  </div>
+
+  <div class="webull">
+    <div class="webull-lbl">Collar — Iron Butterfly ชนิดหนึ่ง</div>
+    <p>Collar = Long stock + Long put + Short call<br>
+    ถ้ามองจาก options อย่างเดียว: Long put (positive vega) + Short call (negative vega) = vega ชดเชยกัน</p>
+    <p>เหมือนกับ long iron butterfly บางส่วน — ตัดทิศทางเพื่อลด vega exposure รวม<br>
+    TE collar case: collar ช่วย cap downside ตอน TE ลง 19% แม้ไม่ได้กำไรเต็มที่จาก movement</p>
+  </div>
+
+  <!-- Strategy availability table -->
+  <h3>สรุป: Strategy ไหนทำได้บน Webull Thailand</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Strategy</th><th>Webull Status</th><th>Greek Profile</th><th>ใช้เมื่อ</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CSP</strong></td>
+          <td class="up">✓ ทำได้</td>
+          <td>Gamma−, Theta+, Vega−</td>
+          <td>IV สูง, ตลาดทรงหรือขึ้น</td>
+        </tr>
+        <tr>
+          <td><strong>Covered Call</strong></td>
+          <td class="up">✓ ทำได้</td>
+          <td>Gamma−, Theta+, Vega−</td>
+          <td>IV สูง, ตลาดทรง</td>
+        </tr>
+        <tr>
+          <td><strong>Collar</strong></td>
+          <td class="up">✓ ทำได้</td>
+          <td>Mixed, Theta+</td>
+          <td>ป้องกัน downside</td>
+        </tr>
+        <tr>
+          <td><strong>Long LEAPS</strong></td>
+          <td class="up">✓ ทำได้</td>
+          <td>Gamma+, Theta−, Vega+</td>
+          <td>IV ต่ำ + catalyst</td>
+        </tr>
+        <tr>
+          <td><strong>Long Straddle</strong></td>
+          <td style="color:var(--gold);">⚠ ทำได้ แต่ capital สูง</td>
+          <td>Gamma+, Theta−, Vega+</td>
+          <td>IV ต่ำ, คาดตลาดวิ่งมาก</td>
+        </tr>
+        <tr>
+          <td><strong>Long Butterfly</strong></td>
+          <td style="color:var(--gold);">⚠ 3 legs ซับซ้อน</td>
+          <td>Gamma−, Theta+, Vega−</td>
+          <td>IV สูง, ตลาดทรงแน่</td>
+        </tr>
+        <tr>
+          <td><strong>Vertical/Diagonal Spread</strong></td>
+          <td class="dn">✗ LEAPS เป็น collateral ไม่ได้</td>
+          <td>Depends on direction</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>Short Straddle/Strangle</strong></td>
+          <td class="dn">✗ Unlimited risk อาจถูก restrict</td>
+          <td>Gamma−, Theta+, Vega−</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider" style="margin-top:56px;"></div>
+</div><!-- /page -->
+
+
+<center>
+  <a href="index.html" class="nav-btn active">หน้าแรก</a>
+  </center>
+
+<div class="footer-nav">
+    <a href="natenberg_ch7.html" class="nav-btn active"> <- บทที่ 7 </a>
+    <div class="page-indicator">Ch.7 / 20</div>
+    <a href="natenberg_ch9.html" class="nav-btn active">บทที่ 9 →</a>
+  </div>
+
+</body>
+</html>

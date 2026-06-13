@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.5 — Using Theoretical Value</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: #2a3441;
+    --accent: #58c4a0;
+    --accent2: #f0a050;
+    --accent3: #e06c75;
+    --accent4: #79b8ff;
+    --accent5: #c678dd;
+    --text: #cdd9e5;
+    --text-dim: #768390;
+    --text-bright: #f0f6fc;
+    --tag-bg: #1a2f26;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 28px 24px 24px; }
+  .book-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .chapter-tag { display: inline-block; background: var(--tag-bg); color: var(--accent); font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 3px; border: 1px solid rgba(88,196,160,0.3); margin-bottom: 12px; }
+  .chapter-title { font-size: 22px; font-weight: 600; color: var(--text-bright); line-height: 1.3; margin-bottom: 8px; }
+  .chapter-subtitle { font-size: 13px; color: var(--text-dim); }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .tldr { background: #0e1f18; border: 1px solid rgba(88,196,160,0.4); border-left: 3px solid var(--accent); border-radius: 6px; padding: 16px 18px; margin-bottom: 28px; }
+  .tldr-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  .tldr p { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  .section { margin-bottom: 32px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .section-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); background: var(--tag-bg); border: 1px solid rgba(88,196,160,0.25); padding: 2px 7px; border-radius: 3px; }
+  .section-title { font-size: 14px; font-weight: 600; color: var(--text-bright); letter-spacing: 0.3px; }
+
+  .body-text { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
+
+  /* 3-step process */
+  .steps { display: flex; flex-direction: column; gap: 0; margin-bottom: 16px; }
+  .step { display: flex; gap: 12px; align-items: flex-start; position: relative; }
+  .step + .step::before { content: ''; position: absolute; left: 16px; top: -14px; height: 14px; width: 2px; background: var(--border); }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--tag-bg); border: 1px solid rgba(88,196,160,0.4); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .step-content { padding: 4px 0 16px; }
+  .step-title { font-size: 13px; font-weight: 600; color: var(--text-bright); margin-bottom: 3px; }
+  .step-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  .concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 480px) { .concept-grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .card-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: var(--accent); margin-bottom: 5px; }
+  .card p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .formula { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin: 10px 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--accent); text-align: center; }
+  .formula .comment { font-size: 11px; color: var(--text-dim); margin-top: 4px; font-family: 'IBM Plex Sans Thai', sans-serif; }
+
+  /* P&L breakdown table */
+  .pl-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; }
+  .pl-table th { background: var(--surface2); color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+  .pl-table td { padding: 8px 10px; border: 1px solid var(--border); color: var(--text); background: var(--surface); }
+  .pl-table tr:hover td { background: var(--surface2); }
+  .pl-table .total-row td { background: rgba(88,196,160,0.08); font-weight: 600; }
+  .pos { color: var(--accent); font-weight: 600; }
+  .neg { color: var(--accent3); font-weight: 600; }
+
+  .note { background: #1a1e2a; border: 1px solid rgba(240,160,80,0.3); border-left: 3px solid var(--accent2); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .note-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent2); margin-bottom: 6px; }
+  .note p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .warning { background: #1f1316; border: 1px solid rgba(224,108,117,0.3); border-left: 3px solid var(--accent3); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .warning-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent3); margin-bottom: 6px; }
+  .warning p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .insight { background: #1a1525; border: 1px solid rgba(198,120,221,0.3); border-left: 3px solid var(--accent5); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .insight-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent5); margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .quote { background: var(--surface2); border-left: 3px solid var(--accent5); border-radius: 0 6px 6px 0; padding: 14px 16px; margin-bottom: 16px; font-style: italic; }
+  .quote p { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .quote-source { font-size: 11px; color: var(--text-dim); margin-top: 6px; font-style: normal; font-family: 'IBM Plex Mono', monospace; }
+
+  /* Race visual */
+  .race-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+  .race-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 14px; text-align:center; }
+  .race-cols { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+  @media (max-width: 480px) { .race-cols { grid-template-columns: 1fr; } }
+  .race-side { background: var(--surface2); border-radius: 6px; padding: 14px; text-align: center; }
+  .race-side.win { border: 1px solid rgba(88,196,160,0.4); }
+  .race-side.lose { border: 1px solid rgba(224,108,117,0.4); }
+  .race-side-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; margin-bottom: 6px; }
+  .race-side.win .race-side-label { color: var(--accent); }
+  .race-side.lose .race-side-label { color: var(--accent3); }
+  .race-side-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+  .race-vs { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-dim); text-align: center; }
+
+  /* Two ways to profit */
+  .ways-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 480px) { .ways-grid { grid-template-columns: 1fr; } }
+  .way-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .way-card.fast { border-color: rgba(88,196,160,0.3); }
+  .way-num { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+  .way-card.slow .way-num { color: var(--accent2); }
+  .way-title { font-size: 13px; font-weight: 600; color: var(--text-bright); margin-bottom: 6px; }
+  .way-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  .practical { background: #0d1a24; border: 1px solid rgba(88,196,160,0.2); border-radius: 6px; padding: 16px; margin-top: 14px; }
+  .practical-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 10px; }
+  .practical p { font-size: 13px; color: var(--text); line-height: 1.65; }
+  .practical p + p { margin-top: 8px; }
+
+  .checklist { list-style: none; margin-top: 10px; }
+  .checklist li { font-size: 13px; color: var(--text); padding: 6px 0 6px 22px; position: relative; line-height: 1.5; border-bottom: 1px solid var(--border); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
+
+  strong { color: var(--text-bright); font-weight: 500; }
+  .em-green { color: var(--accent); font-weight: 500; }
+  .em-orange { color: var(--accent2); font-weight: 500; }
+  .em-red { color: var(--accent3); font-weight: 500; }
+  .em-blue { color: var(--accent4); font-weight: 500; }
+  .em-purple { color: var(--accent5); font-weight: 500; }
+
+  .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 14px; }
+  .nav-btn.active { color: var(--accent); border-color: rgba(88,196,160,0.4); }
+  .page-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="book-label">Natenberg · Option Volatility & Pricing · 1994</div>
+  <div class="chapter-tag">CHAPTER 05</div>
+  <div class="chapter-title">Using an Option's Theoretical Value</div>
+  <div class="chapter-subtitle">สรุปเนื้อหา · เอา Theoretical Value ไปทำกำไรจริงด้วย Delta Hedge</div>
+</div>
+
+<div class="container">
+
+  <!-- TL;DR -->
+  <div class="tldr">
+    <div class="tldr-label">TL;DR</div>
+    <p>บทนี้แสดงวิธี<strong>เปลี่ยน theoretical edge เป็นกำไรจริง</strong> ผ่าน 3 ขั้นตอน: ซื้อ option ที่ underpriced → สร้าง delta-neutral hedge → adjust ให้ neutral เรื่อยๆ · ตัวอย่างจริงในหนังสือพิสูจน์ว่า model ทำนายกำไร $63 และผลจริงได้ $62.81 — แม่นมาก ถ้า input ถูก</p>
+  </div>
+
+  <!-- Section 1: The Goal -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">เป้าหมาย · เปลี่ยน Edge เป็นเงินจริง</span>
+    </div>
+
+    <div class="quote">
+      <p>"If we make these assumptions, and the Black-Scholes Model does indeed work, then we ought to be able to turn any difference between an option's price and its theoretical value into a profit."</p>
+      <div class="quote-source">— Natenberg, Chapter 5</div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ตัวอย่างหลักของบทนี้</div>
+      <p>June 100 call · Theoretical Value = <strong class="em-green">3.88</strong> · ราคาตลาด = <strong class="em-red">3.25</strong><br>
+      → option underpriced อยู่ 0.63 → <strong>ซื้อ</strong> เพราะมี theoretical edge</p>
+    </div>
+
+    <p class="body-text">แต่การซื้อแล้วรอเฉยๆ ไม่พอ — Chapter 3 บอกแล้วว่าต้อง hedge ด้วย underlying เพื่อให้ position เป็น <strong>delta neutral</strong> (ไม่ขึ้นกับทิศทางราคา) แล้วเก็บกำไรจาก edge อย่างเดียว</p>
+  </div>
+
+  <!-- Section 2: 3-Step Process -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">3 ขั้นตอนการใช้ Theoretical Value</span>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Purchase (sell) undervalued (overvalued) options</div>
+          <div class="step-desc">ซื้อ option ที่ราคา &lt; theoretical value หรือขายที่ราคา &gt; theoretical value — นี่คือจุดที่ edge เกิด</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Establish a delta neutral hedge</div>
+          <div class="step-desc">hedge ด้วย underlying เพื่อตัด directional risk · ตัวอย่าง: ซื้อ 100 calls (delta 57) → ขาย 57 futures เพื่อให้ delta position = 0</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Adjust the hedge at regular intervals to remain delta neutral</div>
+          <div class="step-desc">เมื่อราคาขยับ delta เปลี่ยน → ต้อง rebalance ให้ neutral อยู่เสมอ · ในทางทฤษฎี adjust ต่อเนื่อง แต่จริงๆ adjust เป็นช่วงๆ ได้</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">Delta คืออะไร (เกริ่นก่อนบท 6)</div>
+      <p>Delta = hedge ratio · Call delta อยู่ระหว่าง 0–100 · Underlying มี delta = 100 เสมอ · ถ้า call delta = 57 → ซื้อ 100 calls ต้องขาย 57 futures เพื่อ neutral</p>
+    </div>
+  </div>
+
+  <!-- Section 3: The Worked Example -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">ตัวอย่างจริง · 10 สัปดาห์ของ Delta Hedge</span>
+    </div>
+
+    <p class="body-text">หนังสือเดิน hedge นี้ไปจนถึง expiry โดย adjust ทุกสัปดาห์ตามที่ delta เปลี่ยน — ผลลัพธ์แยกเป็น 4 ส่วน:</p>
+
+    <table class="pl-table">
+      <thead>
+        <tr><th>COMPONENT</th><th>P&L</th><th>คำอธิบาย</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Original Hedge</td><td class="neg">−138.83</td><td>option + futures ที่เปิดตอนแรก ขาดทุน</td></tr>
+        <tr><td>Adjustments</td><td class="pos">+205.27</td><td>กำไรจากการ buy low / sell high ตอน rebalance</td></tr>
+        <tr><td>Option Carrying Cost</td><td class="neg">−4.99</td><td>ดอกเบี้ยจากการจ่ายเงินซื้อ option</td></tr>
+        <tr><td>Variation Costs</td><td class="pos">+1.36</td><td>ดอกเบี้ยจาก cash flow ของ futures</td></tr>
+        <tr class="total-row"><td>TOTAL PROFIT</td><td class="pos">+62.81</td><td>ผลรวมจริง</td></tr>
+      </tbody>
+    </table>
+
+    <div class="insight">
+      <div class="insight-label">💡 Model ทำนายแม่นมาก</div>
+      <p>Theoretical edge = 100 contracts × (3.88 − 3.25) = 100 × 0.63 = <strong class="em-green">+63.00</strong><br>
+      ผลจริง = <strong class="em-green">+62.81</strong> · ต่างกันแค่ 0.19 — พิสูจน์ว่าถ้า input ถูก (โดยเฉพาะ volatility) model ทำนายกำไรได้แม่นจริง</p>
+    </div>
+
+    <div class="note">
+      <div class="note-label">⚡ จุดสำคัญเรื่อง Adjustments</div>
+      <p>การ adjust บังคับให้เรา <strong>"buy low, sell high"</strong> โดยอัตโนมัติ — ราคาขึ้น delta บวก ต้องขาย futures (sell high) · ราคาลง delta ลบ ต้องซื้อ futures (buy low) · นี่คือที่มาของกำไร +205.27 ที่ชดเชย hedge เดิมที่ขาดทุน</p>
+    </div>
+  </div>
+
+  <!-- Section 4: The Race Metaphor -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">มอง Hedge เป็น "การแข่งขัน"</span>
+    </div>
+
+    <div class="quote">
+      <p>"We might think of the hedge as a race between the loss in time value of the calls and the cash flow resulting from the adjustments, with the theoretical pricing model acting as the judge."</p>
+      <div class="quote-source">— Natenberg, Chapter 5</div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title">THE RACE — เมื่อซื้อ undervalued option</div>
+      <div class="race-cols">
+        <div class="race-side lose">
+          <div class="race-side-label">▼ ฝั่งที่เสีย</div>
+          <div class="race-side-desc">Time Value decay ของ option ที่ซื้อมา (theta)</div>
+        </div>
+        <div class="race-vs">VS</div>
+        <div class="race-side win">
+          <div class="race-side-label">▲ ฝั่งที่ได้</div>
+          <div class="race-side-desc">Cash flow จาก adjustments (buy low sell high)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ใครชนะการแข่งขัน?</div>
+      <p>ถ้าซื้อ option ที่ <strong>ราคา &lt; theoretical value</strong> → adjustments จะชนะ (กำไร) · ถ้าซื้อแพงกว่า theoretical → time decay จะชนะ (ขาดทุน) · กติกาของการแข่งขันถูกกำหนดโดย input เข้า model โดยเฉพาะ volatility</p>
+    </div>
+  </div>
+
+  <!-- Section 5: Volatility determines the winner -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Volatility คือตัวตัดสิน · Break-even Vol</span>
+    </div>
+
+    <p class="body-text">ในตัวอย่าง future volatility = 18.3% (ที่สมมติว่ารู้) แต่ถ้า vol จริงต่างออกไปล่ะ?</p>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Vol สูงกว่าที่จ่าย</div>
+        <p>price ขยับมากขึ้น → adjustments บ่อยขึ้น → กำไรมากขึ้น (สอดคล้องกับ "vol สูง = option แพงขึ้น")</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Vol ต่ำกว่าที่จ่าย</div>
+        <p>price ขยับน้อย → adjustments น้อย → กำไรลด · ถ้า vol ต่ำพอ กำไรเป็น 0</p>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 Break-even Volatility = Implied Volatility</div>
+      <p>vol ที่ทำให้กำไรเป็น 0 พอดี = <strong>implied volatility ของราคาที่ซื้อ</strong> · ตัวอย่าง: ซื้อ call ที่ 3.25 → IV = 14.6% · ถ้า vol จริง &gt; 14.6% = กำไร · ถ้า &lt; 14.6% = ขาดทุน · เราซื้อเพราะคาดว่า vol จริงจะเป็น 18.3% &gt; 14.6%</p>
+    </div>
+  </div>
+
+  <!-- Section 6: Two ways to profit -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">2 วิธีเก็บกำไร · ไม่ต้องถือถึง Expiry</span>
+    </div>
+
+    <p class="body-text">ไม่จำเป็นต้องถือ position 10 สัปดาห์เต็มเสมอ — มี 2 ทางที่ edge จะกลายเป็นเงิน:</p>
+
+    <div class="ways-grid">
+      <div class="way-card fast">
+        <div class="way-num">A</div>
+        <div class="way-title">IV reverts ขึ้น (เร็ว)</div>
+        <div class="way-desc">ถ้า implied vol ในตลาดวิ่งขึ้นจาก 14.6% → 18.3% → ราคา option ขึ้นจาก 3.25 → 3.88 ทันที → ปิด position เก็บกำไร 0.63 เลย ไม่ต้องรอ</div>
+      </div>
+      <div class="way-card slow">
+        <div class="way-num">B</div>
+        <div class="way-title">ถือถึง expiry + adjust (ช้า)</div>
+        <div class="way-desc">ถ้า IV ไม่ reverts → ถือ position แล้ว adjust ไปเรื่อยๆ จนถึง expiry → กำไรจะค่อยๆ realize ผ่าน cash flow ของ adjustments</div>
+      </div>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ IV อาจเคลื่อนสวนทางชั่วคราว</div>
+      <p>หลังเปิด position IV อาจตกลงไปอีก (เช่น 14.6% → 13.5%) → เกิด paper loss ทันที · แต่ถ้า vol forecast (18.3%) ยังถูก ก็ไม่ต้องปิด — เหมือน trader เลือก bottom ของ IV ไม่ได้แม่นเป๊ะ ต้องทนรับ temporary loss เป็น</p>
+    </div>
+  </div>
+
+  <!-- Section 7: Retail vs Professional -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Retail vs Professional · ใครควร adjust แค่ไหน</span>
+    </div>
+
+    <p class="body-text">ประเด็นที่สำคัญมากสำหรับ retail trader — Natenberg อธิบายว่าทั้งสองมี edge เท่ากัน แต่ approach ต่างกัน:</p>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Professional (low cost)</div>
+        <p>transaction cost ต่ำ → adjust บ่อยได้ → ลด short-term luck → กำไรนิ่งกว่า</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Retail (high cost)</div>
+        <p>transaction cost สูง → adjust น้อย หรือไม่ adjust → กำไรเหวี่ยงมากกว่า แต่ <strong>expected value เท่ากัน</strong></p>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 Adjustments ไม่เพิ่ม expected return</div>
+      <p>การ adjust ไม่ได้เพิ่มกำไรคาดหวัง — มันแค่ <strong>ลด variance</strong> (ความเหวี่ยง) · retail ที่ adjust น้อยจะเจอทั้งกำไรและขาดทุนที่ใหญ่กว่า แต่ในระยะยาว average เท่ากับ professional · ดังนั้น retail ที่ cost สูงควร adjust น้อยลงเพื่อไม่ให้ fee กิน edge</p>
+    </div>
+  </div>
+
+  <!-- Section 8: Frictionless market assumptions -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">ข้อสมมติ Frictionless Market · ที่ไม่จริงในโลกจริง</span>
+    </div>
+
+    <p class="body-text">Black-Scholes สมมติตลาดไม่มี friction — แต่โลกจริงไม่ใช่:</p>
+
+    <table class="pl-table">
+      <thead>
+        <tr><th>ข้อสมมติ</th><th>โลกจริง</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ซื้อขาย underlying ได้เสรี</td><td class="neg">มี daily limit, locked market</td></tr>
+        <tr><td>กู้/ให้กู้ rate เดียวกัน</td><td class="neg">มี spread ระหว่าง borrow/lend rate</td></tr>
+        <tr><td>Transaction cost = 0</td><td class="neg">มี brokerage fee จริง (สำคัญมากสำหรับ retail)</td></tr>
+        <tr><td>ไม่มีภาษี</td><td class="neg">มี tax consequences ต่างกันตาม strategy</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <div class="note-label">ผลกระทบต่อ retail</div>
+      <p>Transaction cost คือ friction ที่กระทบ retail มากที่สุด — ถ้า fee สูง การ adjust บ่อยอาจกิน profit หมด · ต้องชั่งน้ำหนักระหว่าง adjust (ลด variance) กับ fee (ลด profit)</p>
+    </div>
+  </div>
+
+  <!-- Practical Application -->
+  <div class="practical">
+    <div class="practical-label">⚡ CONNECT TO YOUR TRADING</div>
+    <p><strong>Webull capital ~$2,000:</strong> ในฐานะ retail ที่ cost ต่อ trade ค่อนข้างสูงเทียบทุน — บทนี้บอกชัดว่าอย่า adjust บ่อยเกินไป เพราะ fee จะกิน edge · เลือก adjust เฉพาะตอน delta เบี่ยงมากจริงๆ</p>
+    <p><strong>IV Rank เป็นตัวตัดสิน buy/sell:</strong> หลักการ break-even vol = IV ตรงกับที่เคยคุยเรื่อง UUUU (IV Rank ~5 = ถูก → ซื้อ LEAPS) · ถ้า IV ปัจจุบัน &lt; vol ที่คาดว่าจะเกิดจริง → ซื้อมี edge · ถ้า IV &gt; vol ที่คาด → ขายมี edge (CSP/CC)</p>
+    <p><strong>CSP/Covered Call = ฝั่งขาย:</strong> ขั้นตอนที่ 1 ของบทนี้ ฝั่ง "sell overvalued" คือสิ่งที่ทำอยู่ — ขาย option ตอน IV สูง (overpriced) แล้วเก็บ premium · ความต่างคือ retail ส่วนใหญ่ไม่ delta-hedge แบบในหนังสือ แต่รับ directional risk แทน (cash-secured)</p>
+    <p><strong>2 วิธีเก็บกำไร = exit strategy:</strong> เมื่อขาย CSP ตอน IV สูง → ถ้า IV crush ลงเร็ว (วิธี A) สามารถปิดเก็บกำไรก่อน expiry ได้เลย ไม่ต้องรอ · นี่คือเหตุผลที่หลายคนปิด CSP ที่ 50% profit แทนถือถึง expiry</p>
+  </div>
+
+  <!-- Key Takeaways -->
+  <div class="section" style="margin-top: 28px;">
+    <div class="section-header">
+      <span class="section-num">✓</span>
+      <span class="section-title">สรุปสิ่งที่ต้องจำจากบทนี้</span>
+    </div>
+    <ul class="checklist">
+      <li>3 ขั้นตอน: ซื้อ/ขาย mispriced option → delta neutral hedge → adjust สม่ำเสมอ</li>
+      <li>Model ทำนายกำไรแม่นมาก (edge $63 → จริง $62.81) ถ้า input ถูก</li>
+      <li>Adjustments บังคับ buy low sell high โดยอัตโนมัติ — นี่คือที่มาของกำไร</li>
+      <li>มอง hedge เป็น race: time decay vs adjustment cash flow</li>
+      <li>Break-even volatility = implied volatility ของราคาที่ซื้อ</li>
+      <li>2 วิธีเก็บกำไร: IV reverts (เร็ว) หรือ ถือถึง expiry + adjust (ช้า)</li>
+      <li>Adjustments ลด variance ไม่เพิ่ม expected return → retail cost สูงควร adjust น้อย</li>
+      <li>โลกจริงไม่ frictionless — transaction cost กระทบ retail มากที่สุด</li>
+    </ul>
+  </div>
+  <br>
+  <center>
+  <a href="index.html" class="nav-btn active">หน้าแรก</a>
+  </center>
+
+  <!-- Footer nav -->
+ <div class="footer-nav">
+    <a href="natenberg_ch4.html" class="nav-btn active"> <- บทที่ 4 </a>
+    <div class="page-indicator">Ch.5 / 20</div>
+    <a href="natenberg_ch6.html" class="nav-btn active">บทที่ 6 →</a>
+  </div>
+
+</div>
+</body>
+</html>

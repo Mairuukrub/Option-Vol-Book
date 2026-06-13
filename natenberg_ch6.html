@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.6 — Option Values & The Greeks</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Playfair+Display:wght@700&display=swap');
+
+  :root {
+    --bg:        #0b0f14;
+    --surface:   #111820;
+    --surface2:  #19222e;
+    --border:    #1f2d3d;
+    --gold:      #f5c842;
+    --gold-dim:  #a88a20;
+    --blue:      #4ea8de;
+    --green:     #3fba74;
+    --red:       #e05c5c;
+    --purple:    #a78bfa;
+    --orange:    #fb923c;
+    --text:      #dde5ee;
+    --muted:     #6b7f96;
+    --dim:       #3d5066;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    padding: 0 0 80px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0b0f14 0%, #0e1c2b 50%, #091420 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 40px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: 'Δ Γ Θ ν ρ';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 160px;
+    font-family: 'Playfair Display', serif;
+    color: #ffffff04;
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 28px;
+  }
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 620px;
+  }
+  .hero-sub em { color: var(--blue); font-style: normal; }
+
+  /* ── NAV ── */
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 99;
+  }
+  .toc a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: all .2s;
+  }
+  .toc a:hover { color: var(--gold); border-color: var(--gold-dim); background: #1a1500; }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  section {
+    padding: 56px 0 0;
+  }
+
+  /* ── SECTION HEADER ── */
+  .sec-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .greek-badge {
+    font-family: 'Playfair Display', serif;
+    font-size: 54px;
+    line-height: 1;
+    min-width: 64px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .sec-head-text h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .sec-head-text .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .sec-head-text .en-name {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── PROSE ── */
+  p { margin-bottom: 14px; color: var(--text); }
+  .lead { font-size: 16px; color: #c5d4e4; line-height: 1.8; margin-bottom: 20px; }
+
+  /* ── GRID BOXES ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 20px 0; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .card-body { font-size: 14px; color: #b0c0d4; line-height: 1.6; }
+  .card.accent-gold { border-color: var(--gold-dim); background: #16140a; }
+  .card.accent-blue { border-color: #2a4d6a; background: #0d1a25; }
+  .card.accent-green { border-color: #1e4a30; background: #0b1c14; }
+  .card.accent-red { border-color: #4a1e1e; background: #1c0d0d; }
+  .card.accent-purple { border-color: #3d2f66; background: #140f22; }
+
+  /* ── DEFINITION LINE ── */
+  .def-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    background: var(--surface2);
+    border-left: 3px solid var(--gold);
+    padding: 12px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .def-line .formula {
+    font-size: 17px;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin: 20px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  tbody tr:hover td { background: var(--surface2); }
+  .up { color: var(--green); font-weight: 600; }
+  .down { color: var(--red); font-weight: 600; }
+  .neutral { color: var(--muted); }
+
+  /* ── WEBULL BOX ── */
+  .webull-box {
+    background: linear-gradient(135deg, #0b1c14, #0d1a0f);
+    border: 1px solid #1e4a30;
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 24px 0;
+  }
+  .webull-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .webull-label::before {
+    content: '📱';
+    font-size: 14px;
+  }
+  .webull-box p { color: #9fcfb0; margin-bottom: 8px; font-size: 14px; }
+  .webull-box p:last-child { margin-bottom: 0; }
+  .webull-box strong { color: var(--green); }
+
+  /* ── WARNING ── */
+  .warn {
+    background: #1c0d0d;
+    border: 1px solid #4a1e1e;
+    border-left: 4px solid var(--red);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #e0a0a0;
+  }
+  .warn-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* ── KEY INSIGHT ── */
+  .insight {
+    background: #16140a;
+    border: 1px solid var(--gold-dim);
+    border-left: 4px solid var(--gold);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #d4bc6a;
+  }
+  .insight-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* ── COMPARISON ROW ── */
+  .compare-row {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+    align-items: stretch;
+  }
+  .compare-col {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .compare-col h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .compare-col ul { list-style: none; font-size: 13px; color: #b0c0d4; }
+  .compare-col ul li { margin-bottom: 6px; padding-left: 14px; position: relative; }
+  .compare-col ul li::before { content: '·'; position: absolute; left: 0; color: var(--muted); }
+
+  /* ── DELTA VISUAL ── */
+  .delta-scale {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  .delta-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 12px 0;
+    height: 36px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .db-seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    flex: 1;
+  }
+  .db-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--muted);
+  }
+
+  /* ── GAMMA-THETA TRADEOFF ── */
+  .tradeoff {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  .tradeoff-item {
+    text-align: center;
+    flex: 1;
+  }
+  .tradeoff-item .val {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    display: block;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .tradeoff-item .lbl { font-size: 12px; color: var(--muted); }
+  .tradeoff-arrow {
+    font-size: 28px;
+    color: var(--muted);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 48px 0 0;
+  }
+
+  /* ── SUMMARY TABLE ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+  .sg-cell {
+    background: var(--surface);
+    padding: 12px 14px;
+  }
+  .sg-head {
+    background: var(--surface2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .sg-greek {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .sg-name { font-size: 11px; color: var(--muted); }
+
+  /* ── TAG CHIPS ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .tag.gold { color: var(--gold); border-color: var(--gold-dim); }
+  .tag.blue { color: var(--blue); border-color: #2a4d6a; }
+  .tag.green { color: var(--green); border-color: #1e4a30; }
+  .tag.red { color: var(--red); border-color: #4a1e1e; }
+  .tag.purple { color: var(--purple); border-color: #3d2f66; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 72px;
+    border-top: 1px solid var(--border);
+    padding: 28px 40px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .hero { padding: 36px 20px 32px; }
+    .hero h1 { font-size: 28px; }
+    .toc { padding: 14px 20px; }
+    .page { padding: 0 16px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 60px 1fr 1fr; }
+    .compare-row { flex-direction: column; }
+    .tradeoff { flex-direction: column; }
+  }
+
+  .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 14px; }
+  .nav-btn.active { color: var(--accent); border-color: rgba(88,196,160,0.4); }
+  .page-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="hero">
+  <div class="page">
+    <div class="hero-eyebrow">Natenberg — Option Pricing &amp; Volatility · บทที่ 6</div>
+    <h1>Option Values &amp; <span>The Greeks</span></h1>
+    <p class="hero-sub">
+      ทำไม option ถึงซับซ้อนกว่าหุ้น? เพราะมี <em>หลายแรงพร้อมกัน</em> — ราคา, เวลา, volatility, ดอกเบี้ย —
+      แต่ละแรงมีชื่อย่อเป็นตัวอักษรกรีก (Greeks) ซึ่งเป็น dashboard ควบคุมความเสี่ยงของนักเทรด options ทุกคน
+    </p>
+    <div class="tags" style="margin-top:18px;">
+      <span class="tag gold">Delta Δ</span>
+      <span class="tag purple">Gamma Γ</span>
+      <span class="tag blue">Theta Θ</span>
+      <span class="tag green">Vega ν</span>
+      <span class="tag red">Rho ρ</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="toc">
+  <a href="#overview">Overview</a>
+  <a href="#delta">Δ Delta</a>
+  <a href="#gamma">Γ Gamma</a>
+  <a href="#theta">Θ Theta</a>
+  <a href="#vega">ν Vega</a>
+  <a href="#rho">ρ Rho</a>
+  <a href="#summary">Summary</a>
+</nav>
+
+<!-- ═══════════ OVERVIEW ═══════════ -->
+<div class="page">
+<section id="overview">
+  <div class="sec-head">
+    <div class="greek-badge" style="color:var(--muted); font-size:38px; padding-top:8px;">Ch.6</div>
+    <div class="sec-head-text">
+      <h2>ทำไม Options ถึงมีหลายมิติความเสี่ยง</h2>
+      <div class="subtitle">WHY OPTIONS RISK IS MULTI-DIMENSIONAL</div>
+      <div class="en-name">pp. 95–98 · บทนำ</div>
+    </div>
+  </div>
+
+  <p class="lead">
+    นักเทรดหุ้นธรรมดาหรือ futures กังวลแค่ทิศทางเดียว — ขึ้นหรือลง 
+    แต่นักเทรด options ต้องรับมือกับ <strong>อย่างน้อย 4 แรง</strong> พร้อมกัน 
+    แต่ละแรงสามารถเปลี่ยน P&amp;L ของ position ได้โดยที่ราคาหุ้นไม่ขยับเลย
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ถ้า...</th>
+          <th>Call Value</th>
+          <th>Put Value</th>
+          <th>Greek ที่วัด</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ราคา underlying <strong>ขึ้น</strong></td>
+          <td class="up">↑ สูงขึ้น</td>
+          <td class="down">↓ ลดลง</td>
+          <td style="color:var(--gold);">Delta (Δ)</td>
+        </tr>
+        <tr>
+          <td>ราคา underlying <strong>ลง</strong></td>
+          <td class="down">↓ ลดลง</td>
+          <td class="up">↑ สูงขึ้น</td>
+          <td style="color:var(--gold);">Delta (Δ)</td>
+        </tr>
+        <tr>
+          <td>Volatility <strong>สูงขึ้น</strong></td>
+          <td class="up">↑ สูงขึ้น</td>
+          <td class="up">↑ สูงขึ้น</td>
+          <td style="color:var(--green);">Vega (ν)</td>
+        </tr>
+        <tr>
+          <td>Volatility <strong>ลดลง</strong></td>
+          <td class="down">↓ ลดลง</td>
+          <td class="down">↓ ลดลง</td>
+          <td style="color:var(--green);">Vega (ν)</td>
+        </tr>
+        <tr>
+          <td>เวลา <strong>ผ่านไป</strong></td>
+          <td class="down">↓ ลดลง *</td>
+          <td class="down">↓ ลดลง *</td>
+          <td style="color:var(--blue);">Theta (Θ)</td>
+        </tr>
+        <tr>
+          <td>ดอกเบี้ย <strong>ขึ้น</strong> (US stock)</td>
+          <td class="up">↑ สูงขึ้น</td>
+          <td class="down">↓ ลดลง</td>
+          <td style="color:var(--red);">Rho (ρ)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:12px; color:var(--muted);">* ในบางกรณี deep ITM European option อาจมี positive theta ได้ (หายากมาก)</p>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull Thailand — ใช้งานจริง</div>
+    <p>หน้า option chain บน Webull แสดง Greeks ทุกตัวสำหรับแต่ละ strike/expiry
+    คอลัมน์ที่ควรดูทุกครั้งที่เปิด position: <strong>Delta, Theta, Vega, IV%</strong></p>
+    <p>ก่อนกด Buy/Sell ลอง "อ่าน Greeks" ให้เป็นนิสัย — เช่น ถ้า Theta = -0.08
+    แปลว่าถ้าถือข้ามคืน option หายไป ~8 cents/วัน โดยอัตโนมัติ</p>
+  </div>
+</section>
+
+<!-- ═══════════ DELTA ═══════════ -->
+<div class="divider"></div>
+<section id="delta">
+  <div class="sec-head">
+    <div class="greek-badge" style="color:var(--gold);">Δ</div>
+    <div class="sec-head-text">
+      <h2>The Delta</h2>
+      <div class="subtitle">DIRECTIONAL SENSITIVITY</div>
+      <div class="en-name">pp. 99–103 · อัตราการเปลี่ยนแปลงเทียบกับราคา underlying</div>
+    </div>
+  </div>
+
+  <div class="def-line">
+    <span class="formula">Δ = ΔOption Price / ΔUnderlying Price</span>
+    อัตราที่ option value เปลี่ยน เมื่อราคา underlying ขยับ $1
+    <br>เขียน delta ในรูปเต็ม 0–100 (ไม่มีจุดทศนิยม เช่น delta 50 ไม่ใช่ 0.50)
+  </div>
+
+  <div class="grid-3">
+    <div class="card accent-gold">
+      <div class="card-title" style="color:var(--gold);">Call Delta</div>
+      <div class="card-body">
+        ช่วง <strong style="color:var(--gold);">0 ถึง 100</strong><br>
+        Deep ITM → ~100<br>
+        ATM → ~50<br>
+        Deep OTM → ~0
+      </div>
+    </div>
+    <div class="card accent-red">
+      <div class="card-title" style="color:var(--red);">Put Delta</div>
+      <div class="card-body">
+        ช่วง <strong style="color:var(--red);">-100 ถึง 0</strong><br>
+        Deep ITM → ~-100<br>
+        ATM → ~-50<br>
+        Deep OTM → ~0
+      </div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-title" style="color:var(--blue);">Underlying</div>
+      <div class="card-body">
+        Delta = <strong style="color:var(--blue);">100</strong> เสมอ<br>
+        (Long 1 หุ้น = long 100 deltas)<br>
+        Gamma = 0 เสมอ
+      </div>
+    </div>
+  </div>
+
+  <!-- Delta Scale Visual -->
+  <div class="delta-scale">
+    <div class="db-label">Call Delta — ตามระดับ Moneyness</div>
+    <div class="delta-bar">
+      <div class="db-seg" style="background:#1a1200; color:#888; flex:2;">OTM<br>0–20</div>
+      <div class="db-seg" style="background:#2a2000; color:#aaa; flex:2;">OTM<br>20–40</div>
+      <div class="db-seg" style="background:#3d3000; color:var(--gold); flex:2;">ATM<br>~50</div>
+      <div class="db-seg" style="background:#4d3a00; color:var(--gold); flex:2;">ITM<br>60–80</div>
+      <div class="db-seg" style="background:#5a4000; color:#fde; flex:2;">Deep ITM<br>80–100</div>
+    </div>
+  </div>
+
+  <h3 style="margin:24px 0 16px; color:#c5d4e4; font-size:16px;">3 วิธีตีความ Delta</h3>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title" style="color:var(--purple);">① Rate of Change</div>
+      <div class="card-body">
+        Call delta 50 = option ขยับ $0.50 ต่อทุก $1 ที่หุ้นขึ้น/ลง
+        <br><br>
+        Call delta 25 = option ขยับ $0.25 ต่อ $1
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--purple);">② Hedge Ratio</div>
+      <div class="card-body">
+        จำนวนหุ้นที่ต้อง hedge ต่อ 1 option<br>
+        <strong>Hedge Ratio = 100 / Delta</strong><br><br>
+        ATM call (Δ50): ต้องใช้หุ้น 2 หุ้น/option (100/50)
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--purple);">③ ITM Probability</div>
+      <div class="card-body">
+        |Delta| ≈ โอกาสที่ option จะ expire ITM<br><br>
+        Delta 25 → ~25% chance ว่าจะ ITM ตอน expire
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 Key Insight — Delta เปลี่ยนตามเวลาและ IV</div>
+    เมื่อเวลาลดลง (ใกล้ expiry) หรือ volatility ลดลง → delta ของ ITM calls เคลื่อนไป 100, delta ของ OTM calls เคลื่อนไป 0
+    <br><br>
+    เมื่อเวลาเพิ่มขึ้น (LEAPS) หรือ volatility สูง → delta ทุก strike เคลื่อนเข้าหา 50 (options ดู ATM หมด)
+    <br><br>
+    <strong>สูตรง่าย:</strong> ↑IV / ↑Time → delta pulls to 50 &nbsp;|&nbsp; ↓IV / ↓Time → delta pushes to extremes
+  </div>
+
+  <div class="warn">
+    <div class="warn-label">⚠ Delta เป็น approximation เท่านั้น</div>
+    Delta บอก direction risk ณ จุดเวลานั้น แต่ไม่ใช่ตัวเดิมตลอด
+    เพราะ Gamma ทำให้ delta เปลี่ยนตลอดเวลาที่ราคาขยับ
+    นักเทรดที่ดูแค่ delta แล้วคิดว่า "delta neutral = ปลอดภัย" อาจได้รับความเสียหายหนักจาก gamma
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull — ใช้ Delta ในการเทรด</div>
+    <p><strong>CSP (Cash Secured Put):</strong> เลือก strike ที่มี delta ราว 20–30 → โอกาส expire worthless ~70–80% ทฤษฎี เหมาะกับ income strategy</p>
+    <p><strong>Covered Call:</strong> ถ้าขาย call delta 30 แปลว่า option มีโอกาส ~30% ที่จะถูก exercise — ดูจาก Greeks ใน option chain ของ Webull ได้เลย</p>
+    <p><strong>LEAPS UUUU:</strong> LEAPS 12+ เดือน ที่ delta ~60–70 เปรียบเสมือนถือหุ้น 60–70% โดยจ่าย premium น้อยกว่า — นี่คือ "synthetic position" แบบหนึ่ง</p>
+  </div>
+</section>
+
+<!-- ═══════════ GAMMA ═══════════ -->
+<div class="divider"></div>
+<section id="gamma">
+  <div class="sec-head">
+    <div class="greek-badge" style="color:var(--purple);">Γ</div>
+    <div class="sec-head-text">
+      <h2>The Gamma</h2>
+      <div class="subtitle">RATE OF CHANGE IN DELTA (CURVATURE)</div>
+      <div class="en-name">pp. 103–110 · อัตราที่ delta เปลี่ยนเมื่อ underlying ขยับ</div>
+    </div>
+  </div>
+
+  <div class="def-line">
+    <span class="formula">Γ = ΔDelta / ΔUnderlying Price</span>
+    ถ้า option มี gamma 5 → ทุก $1 ที่ underlying ขึ้น delta เพิ่ม 5 | ทุก $1 ที่ลง delta ลด 5
+  </div>
+
+  <div class="grid-2">
+    <div class="card accent-purple">
+      <div class="card-title" style="color:var(--purple);">ข้อเท็จจริงสำคัญเรื่อง Gamma</div>
+      <div class="card-body">
+        • ทั้ง Call และ Put มี gamma <strong style="color:var(--purple);">บวก</strong> เสมอ<br>
+        • Long option = <strong>Long gamma</strong><br>
+        • Short option = <strong>Short gamma</strong><br>
+        • ATM options มี gamma สูงที่สุด<br>
+        • Underlying contract มี gamma = 0
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Gamma กับ Moneyness</div>
+      <div class="card-body">
+        <strong>ATM</strong> → Gamma สูงสุด (bell curve peak)<br>
+        <strong>ITM / OTM</strong> → Gamma ลดลงทั้งสองข้าง<br>
+        <strong>ใกล้ expiry</strong> → ATM gamma <span style="color:var(--red);">พุ่งสูงมาก</span><br>
+        <strong>ห่าง expiry</strong> → gamma เรียบ flat กว่า
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🔑 Gamma ทำให้ Delta Neutral ล้มเหลวได้</div>
+    สมมติขาย call 10 สัญญา (delta -300 รวม) → คิดว่า delta neutral<br>
+    แต่ถ้า gamma แต่ละ call = 6 → ทุก $1 ที่ขึ้น delta เพิ่ม 60 per contract<br>
+    ราคาขึ้น 10 จุด → delta รวมกลายเป็น -300 + (6×10×10) = <span style="color:var(--red);">+300</span><br>
+    จาก delta neutral กลายเป็น long 300 deltas โดยไม่ได้ตั้งใจ!
+  </div>
+
+  <h3 style="margin:24px 0 16px; color:#c5d4e4; font-size:16px;">ผลของ Time &amp; Volatility ต่อ Gamma</h3>
+
+  <div class="grid-2">
+    <div class="card accent-red">
+      <div class="card-title" style="color:var(--red);">⏰ เวลาลดลง (ใกล้ Expiry)</div>
+      <div class="card-body">
+        ATM gamma <strong style="color:var(--red);">พุ่งสูงขึ้น</strong> อย่างรวดเร็ว<br>
+        ITM/OTM gamma ลดลง<br><br>
+        → short gamma position ที่ใกล้ expiry <strong>อันตรายมาก</strong><br>
+        → เรียกว่า "gamma risk ระเบิด"
+      </div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-title" style="color:var(--blue);">📊 IV ลดลง</div>
+      <div class="card-body">
+        ATM gamma <strong style="color:var(--blue);">สูงขึ้น</strong><br>
+        ITM/OTM gamma ลดลง<br><br>
+        → ยิ่ง IV ต่ำ ยิ่งต้องระวัง short ATM option เพราะ gamma spike ทุกวัน
+      </div>
+    </div>
+  </div>
+
+  <div class="warn">
+    <div class="warn-label">📖 Historical Event — COMEX Collapse 1985</div>
+    กลุ่มนักเทรดขาย OTM gold options จำนวนมาก (short gamma position ขนาดใหญ่)
+    ช่วงก่อนหน้าตลาดทองเงียบ → กลยุทธ์นี้ทำกำไรดี
+    แต่เมื่อตลาดทองพุ่งขึ้นแรง delta ของ position เพิ่มเป็นเท่าตัวอย่างรวดเร็ว
+    ขาดทุนมหาศาล → clearing firm ล้มละลาย → วิกฤติ COMEX clearing association
+    <strong>บทเรียน: short gamma = ความเสี่ยงระเบิดได้ ต้องมี risk limit ที่ชัดเจน</strong>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull — Gamma ในบริบท income strategy</div>
+    <p><strong>Gamma risk สำหรับ CSP/Covered Call:</strong> short options ทุกตัวมี short gamma
+    ถ้า expiry ใกล้มาก (weekly options) gamma จะสูง → หุ้นขยับนิดเดียว delta เปลี่ยนเยอะ → P&amp;L กระโดด</p>
+    <p><strong>วิธีจัดการ:</strong> ถ้าไม่ต้องการ gamma risk สูง หลีกเลี่ยง expiry ที่สั้นเกินไป
+    Natenberg แนะให้ดู gamma ของ position รวม ไม่ใช่แค่ position เดียว</p>
+    <p><strong>TE Collar case:</strong> ตอน TE ลงแรง 19% — นั่นคือ gamma risk กำลังทำงาน
+    CSP ที่เคย delta 25 กลายเป็น delta 70+ ในชั่วข้ามคืน เพราะ gamma ดัน delta ให้วิ่ง</p>
+  </div>
+</section>
+
+<!-- ═══════════ THETA ═══════════ -->
+<div class="divider"></div>
+<section id="theta">
+  <div class="sec-head">
+    <div class="greek-badge" style="color:var(--blue);">Θ</div>
+    <div class="sec-head-text">
+      <h2>The Theta</h2>
+      <div class="subtitle">TIME DECAY FACTOR</div>
+      <div class="en-name">pp. 111–113 · มูลค่าที่หายไปต่อวัน เมื่อทุกอย่างคงที่</div>
+    </div>
+  </div>
+
+  <div class="def-line">
+    <span class="formula">Θ = ΔOption Value / Δ1 Day (holding all else constant)</span>
+    Theta แสดงเป็นลบในตำรา Natenberg เพื่อเตือนว่า long option สูญเสียมูลค่าตามเวลา
+    <br>theta -0.05 = option สูญเสีย $0.05 ต่อวัน
+  </div>
+
+  <div class="grid-2">
+    <div class="card accent-red">
+      <div class="card-title" style="color:var(--red);">Long Option</div>
+      <div class="card-body">
+        Theta = <strong style="color:var(--red);">ลบ</strong> (เสมอ)<br>
+        Gamma = <strong style="color:var(--green);">บวก</strong> (เสมอ)<br><br>
+        จ่าย premium → ซื้อ upside กับ gamma
+        แต่ต้องแลกกับ time decay ทุกวัน
+      </div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-title" style="color:var(--green);">Short Option</div>
+      <div class="card-body">
+        Theta = <strong style="color:var(--green);">บวก</strong> (เสมอ)<br>
+        Gamma = <strong style="color:var(--red);">ลบ</strong> (เสมอ)<br><br>
+        เก็บ premium → ได้ time decay ทุกวัน
+        แต่ต้องรับ gamma risk
+      </div>
+    </div>
+  </div>
+
+  <!-- Tradeoff Visual -->
+  <div class="tradeoff">
+    <div class="tradeoff-item">
+      <span class="val" style="color:var(--purple);">Γ+</span>
+      <span class="lbl">Long Gamma<br>ได้กำไรถ้าตลาดขยับ</span>
+    </div>
+    <div class="tradeoff-arrow">⇌</div>
+    <div class="tradeoff-item">
+      <span class="val" style="color:var(--red);">Θ−</span>
+      <span class="lbl">Negative Theta<br>เสียเงินทุกวันที่หยุดนิ่ง</span>
+    </div>
+    <div style="width:100%; text-align:center; margin-top:12px; font-size:12px; color:var(--muted);">
+      Natenberg: "Either you want the market to move (positive gamma) or you want it to sit still (positive theta). You can't have it both ways."
+    </div>
+  </div>
+
+  <h3 style="margin:24px 0 16px; color:#c5d4e4; font-size:16px;">ลักษณะของ Theta</h3>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">ATM Theta สูงสุด</div>
+      <div class="card-body">
+        ATM options เสีย time value เร็วที่สุด (dollar terms)<br>
+        ITM/OTM เสียช้ากว่า
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Theta เร่งใกล้ Expiry</div>
+      <div class="card-body">
+        ยิ่งใกล้ expiration ATM theta <span style="color:var(--red);">เร่งสูงขึ้น</span>
+        ช่วง last week theta เยอะมากเป็นพิเศษ
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">IV สูง → Theta สูง</div>
+      <div class="card-body">
+        IV สูง = time value เยอะ → ทุกวันที่ผ่านไป theta ดึงมากขึ้น
+        ขาย option ตอน IV สูง ได้ theta เยอะกว่า
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 Theta กับ IV — เชื่อมกันลึกกว่าที่คิด</div>
+    IV สูง = มี time value เยอะ = theta/วันก็สูงด้วย (เพราะมีอะไรให้ decay มากกว่า)
+    <br>
+    IV ต่ำ = time value น้อย = theta/วันก็ต่ำ
+    <br><br>
+    นั่นคือ CSP/CC ที่ขายตอน IV สูง (เช่น ก่อน earnings หรือช่วง volatile) 
+    จะได้ theta มากกว่า = income strategy ทำงานได้ดีกว่า
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull — Theta คือ "เงินเดือน" ของ options seller</div>
+    <p><strong>CSP/CC strategy:</strong> ทุกวันที่ position ถือ option seller ได้ theta เป็นกำไร
+    เช่น sell CSP มี theta +0.05 → ได้ $5/วัน/contract โดยไม่ต้องทำอะไร</p>
+    <p><strong>สูตรประมาณ break-even:</strong> ถ้า underlying ไม่ขยับ theta วิ่งไปเรื่อยๆ
+    45 DTE CSP ที่ sell ราคา $1.50 → ถ้า theta เฉลี่ย $0.03/วัน → 50 วัน expire worthless เก็บเต็ม</p>
+    <p><strong>⚠ Webull แสดง Theta ต่อวัน ตรวจสอบก่อน</strong> บาง platform แสดง theta/วัน บางอันแสดง/7วัน อย่าสับสน</p>
+  </div>
+</section>
+
+<!-- ═══════════ VEGA ═══════════ -->
+<div class="divider"></div>
+<section id="vega">
+  <div class="sec-head">
+    <div class="greek-badge" style="color:var(--green);">ν</div>
+    <div class="sec-head-text">
+      <h2>The Vega (Kappa)</h2>
+      <div class="subtitle">VOLATILITY SENSITIVITY</div>
+      <div class="en-name">pp. 113–116 · มูลค่าที่เปลี่ยนต่อ 1% ที่ IV ขยับ</div>
+    </div>
+  </div>
+
+  <div class="def-line">
+    <span class="formula">Vega = ΔOption Value / Δ1% Implied Volatility</span>
+    Natenberg ใช้ชื่อ "kappa" (κ) แต่ในตลาดเรียก vega ทั่วไป<br>
+    Vega บวกสำหรับ options ทุกประเภท (calls และ puts)
+  </div>
+
+  <div class="grid-2">
+    <div class="card accent-green">
+      <div class="card-title" style="color:var(--green);">Vega: บวกเสมอ</div>
+      <div class="card-body">
+        IV เพิ่ม → option (ทั้ง call และ put) มีค่าสูงขึ้น<br>
+        IV ลด → option มีค่าต่ำลง<br><br>
+        Long option = Long Vega (ชอบ IV สูง)<br>
+        Short option = Short Vega (ชอบ IV ต่ำ)
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">ตัวอย่าง</div>
+      <div class="card-body">
+        Call มีค่า $3.25 ที่ IV = 20%<br>
+        Vega = 0.15<br><br>
+        ถ้า IV เพิ่มเป็น 21% → call = $3.40<br>
+        ถ้า IV ลดเป็น 19% → call = $3.10
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin:24px 0 16px; color:#c5d4e4; font-size:16px;">ลักษณะของ Vega</h3>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">ATM = Vega สูงสุด ($ terms)</div>
+      <div class="card-body">
+        ATM options ไวต่อ IV เปลี่ยนมากที่สุดในแง่ dollar
+        <br>OTM/ITM vega ต่ำกว่า
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">OTM = Vega สูงสุด (% terms)</div>
+      <div class="card-body">
+        OTM options ที่ถูกกว่า มี vega สูงมากเมื่อเทียบกับราคา (% change ใหญ่กว่า)
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Long-term = Vega สูงกว่า</div>
+      <div class="card-body">
+        ยิ่ง DTE เยอะ IV มีเวลาส่งผลมากกว่า → LEAPS vega สูงมาก
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🔑 Time กับ Volatility มีผลคล้ายกัน</div>
+    Natenberg เน้นว่า: <strong>"Decreasing volatility is similar to decreasing time to expiration"</strong>
+    <br><br>
+    กราฟของ option value vs. time และ option value vs. volatility มีรูปร่างคล้ายกันมาก
+    → ถ้าจำไม่ได้ว่า IV ลดทำอะไรกับ option ให้นึกถึงว่าเวลาผ่านไปทำอะไร → ผลเดียวกัน
+    <br><br>
+    → IV ลด 1% = เหมือนเวลาผ่านไปหลายวัน (ขึ้นอยู่กับ vega/theta ratio)
+  </div>
+
+  <div class="warn">
+    <div class="warn-label">⚠ IV Crush — ปัญหาใหญ่สำหรับ Long Option</div>
+    ซื้อ call ก่อน earnings → IV = 80% → หลัง earnings ประกาศดีมาก หุ้นขึ้น 5%
+    แต่ IV collapse เหลือ 30% → vega ดึงราคา option ลงมากกว่า delta ดันขึ้น
+    ผลสุดท้าย: call กลับขาดทุน ทั้งที่ทิศทางถูก
+    <strong>นี่คือเหตุผลที่เนื้อหา Episode 1 ของซีรีส์ content ที่วางแผนไว้นั้นสำคัญมาก</strong>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull — ใช้ Vega วิเคราะห์ IV Rank</div>
+    <p><strong>IV Rank (IVR) บน Webull:</strong> ถ้า IVR สูง (>50%) → IV สูงกว่าปกติ → options แพงในแง่ vega 
+    → เป็นโอกาส sell options (short vega) เก็บ premium แพง</p>
+    <p><strong>UUUU LEAPS strategy:</strong> IVR ต่ำ ~5% → ซื้อ LEAPS ราคาถูก (IV/vega ต่ำ) 
+    ถ้า IV กลับมาสูงขึ้นด้วย catalyst → vega ดัน option value ขึ้นได้โดยไม่ต้องรอหุ้นขึ้น</p>
+    <p><strong>Collar strategy:</strong> Long stock + Long put + Short call → vega ของ long put ชดเชย short call บางส่วน 
+    → ทำให้ vega exposure ลดลงจากการ hedge ทั้งสองทาง</p>
+  </div>
+</section>
+
+<!-- ═══════════ RHO ═══════════ -->
+<div class="divider"></div>
+<section id="rho">
+  <div class="sec-head">
+    <div class="greek-badge" style="color:var(--red);">ρ</div>
+    <div class="sec-head-text">
+      <h2>The Rho</h2>
+      <div class="subtitle">INTEREST RATE SENSITIVITY</div>
+      <div class="en-name">pp. 116–118 · ความไวต่อการเปลี่ยนแปลงดอกเบี้ย</div>
+    </div>
+  </div>
+
+  <div class="def-line">
+    <span class="formula">ρ = ΔOption Value / ΔInterest Rate (1%)</span>
+    Rho ขึ้นอยู่กับประเภท underlying และ settlement method
+    — ซับซ้อนกว่า Greeks ตัวอื่น และสำคัญน้อยที่สุดในทางปฏิบัติ
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ประเภท Option</th>
+          <th>Interest Rate ขึ้น → Call</th>
+          <th>Interest Rate ขึ้น → Put</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Stock Options</strong></td>
+          <td class="up">↑ สูงขึ้น (ρ+)</td>
+          <td class="down">↓ ลดลง (ρ-)</td>
+        </tr>
+        <tr>
+          <td><strong>Futures (futures settlement)</strong></td>
+          <td class="neutral">ไม่มีผล (ρ = 0)</td>
+          <td class="neutral">ไม่มีผล (ρ = 0)</td>
+        </tr>
+        <tr>
+          <td><strong>Futures (stock settlement)</strong></td>
+          <td class="down">↓ ลดลง (ρ-)</td>
+          <td class="down">↓ ลดลง (ρ-)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Rho สูงเมื่อ...</div>
+      <div class="card-body">
+        • Option อยู่ deep ITM<br>
+        • Time to expiration นาน (LEAPS)<br>
+        เพราะ carrying cost มีผลมากกว่า
+      </div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-title" style="color:var(--blue);">ในทางปฏิบัติ</div>
+      <div class="card-body">
+        Natenberg กล่าวชัดว่า: <em>"Few traders pay much attention to the rho"</em>
+        <br><br>
+        Focus ที่ Delta, Gamma, Theta, Vega ก่อน
+      </div>
+    </div>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull Thailand — Rho ใน context การเทรด US stocks</div>
+    <p>US stock options บน Webull มี rho ที่วัดได้ แต่ในช่วง Fed ไม่ได้ขึ้นดอกเบี้ย rho มักไม่ส่งผลมาก</p>
+    <p>สำหรับกลยุทธ์ที่ใช้ตอนนี้ (CSP, Collar, LEAPS): <strong>ไม่ต้องกังวล rho มาก</strong> ตัวที่มีผลกว่าคือ vega และ theta</p>
+  </div>
+</section>
+
+<!-- ═══════════ SUMMARY ═══════════ -->
+<div class="divider"></div>
+<section id="summary">
+  <div class="sec-head">
+    <div class="greek-badge" style="color:var(--muted); font-size:30px; padding-top:12px;">Σ</div>
+    <div class="sec-head-text">
+      <h2>Summary — The Greeks ในภาพรวม</h2>
+      <div class="subtitle">COMPREHENSIVE GREEK REFERENCE</div>
+      <div class="en-name">pp. 118–120 · สรุปจาก Natenberg</div>
+    </div>
+  </div>
+
+  <!-- Master Summary Grid -->
+  <div class="summary-grid">
+    <!-- Header row -->
+    <div class="sg-cell sg-head"></div>
+    <div class="sg-cell sg-head">ค่าสำหรับ ATM</div>
+    <div class="sg-cell sg-head">เมื่อ IV ↑</div>
+    <div class="sg-cell sg-head">เมื่อ Time ↑</div>
+    <div class="sg-cell sg-head">Long / Short</div>
+
+    <!-- Delta row -->
+    <div class="sg-cell" style="border-top:2px solid var(--gold);">
+      <span class="sg-greek" style="color:var(--gold);">Δ</span>
+      <span class="sg-name">Delta</span>
+    </div>
+    <div class="sg-cell" style="border-top:2px solid var(--gold);">Call ~50<br>Put ~-50</div>
+    <div class="sg-cell" style="border-top:2px solid var(--gold);">→ ทุก delta เข้าหา ±50</div>
+    <div class="sg-cell" style="border-top:2px solid var(--gold);">→ ทุก delta เข้าหา ±50</div>
+    <div class="sg-cell" style="border-top:2px solid var(--gold);">Long=+ / Short=-</div>
+
+    <!-- Gamma row -->
+    <div class="sg-cell" style="border-top:2px solid var(--purple);">
+      <span class="sg-greek" style="color:var(--purple);">Γ</span>
+      <span class="sg-name">Gamma</span>
+    </div>
+    <div class="sg-cell" style="border-top:2px solid var(--purple);">ATM สูงสุด</div>
+    <div class="sg-cell" style="border-top:2px solid var(--purple);">ATM gamma ↓<br>OTM/ITM ↑</div>
+    <div class="sg-cell" style="border-top:2px solid var(--purple);">ATM gamma ↑<br>(พุ่งใกล้ expiry)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--purple);">Long=+ / Short=-</div>
+
+    <!-- Theta row -->
+    <div class="sg-cell" style="border-top:2px solid var(--blue);">
+      <span class="sg-greek" style="color:var(--blue);">Θ</span>
+      <span class="sg-name">Theta</span>
+    </div>
+    <div class="sg-cell" style="border-top:2px solid var(--blue);">ATM สูงสุด<br>($ terms)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--blue);">Theta ↑ (IV สูง = decay เร็ว)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--blue);">ATM theta ↑<br>(เร่งใกล้ expiry)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--blue);">Long=− / Short=+</div>
+
+    <!-- Vega row -->
+    <div class="sg-cell" style="border-top:2px solid var(--green);">
+      <span class="sg-greek" style="color:var(--green);">ν</span>
+      <span class="sg-name">Vega</span>
+    </div>
+    <div class="sg-cell" style="border-top:2px solid var(--green);">ATM สูงสุด<br>($ terms)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--green);">Vega คงที่<br>(ATM relatively stable)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--green);">Vega ↑ (ยิ่งนาน ยิ่งไว)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--green);">Long=+ / Short=-</div>
+
+    <!-- Rho row -->
+    <div class="sg-cell" style="border-top:2px solid var(--red);">
+      <span class="sg-greek" style="color:var(--red);">ρ</span>
+      <span class="sg-name">Rho</span>
+    </div>
+    <div class="sg-cell" style="border-top:2px solid var(--red);">Deep ITM สูงสุด</div>
+    <div class="sg-cell" style="border-top:2px solid var(--red);">ไม่ค่อยสำคัญ</div>
+    <div class="sg-cell" style="border-top:2px solid var(--red);">Rho ↑ (LEAPS)</div>
+    <div class="sg-cell" style="border-top:2px solid var(--red);">stock call=+ / put=-</div>
+  </div>
+
+  <!-- Gamma-Theta Relationship -->
+  <div class="insight">
+    <div class="insight-label">🔑 กฎทองของ Gamma-Theta Relationship</div>
+    Long option = Long Gamma (ต้องการราคาขยับ) + Negative Theta (สูญมูลค่าทุกวัน)<br>
+    Short option = Short Gamma (เจ็บปวดถ้าราคาวิ่ง) + Positive Theta (ได้เงินทุกวัน)<br><br>
+    <strong>ไม่มีอาหารกลางวันฟรี:</strong> ถ้าอยากได้ theta → ต้องรับ gamma risk กลับไปด้วยเสมอ
+  </div>
+
+  <!-- Implied Greeks Concept -->
+  <div class="card" style="margin:20px 0; padding:24px;">
+    <div class="card-title" style="color:var(--orange);">🧮 Implied Greeks — แนวคิดขั้นสูง</div>
+    <div class="card-body" style="font-size:14px; line-height:1.8;">
+      Greeks ที่คำนวณจาก implied volatility (ราคาตลาด) แทนที่จะเป็น future volatility ที่เราเดา
+      <br><br>
+      <strong>Implied Delta:</strong> บอกว่าที่ IV ปัจจุบัน delta คือเท่าไหร่
+      — traders นิยมใช้เพื่อ maintain delta neutral position ที่สอดคล้องกับมุมมองตลาดจริง
+      <br><br>
+      <strong>Implied Theta:</strong> เช่นเดียวกัน — theta ที่คำนวณจาก IV ปัจจุบัน
+      มักแสดงบน trading platforms
+    </div>
+  </div>
+
+  <!-- Connection to Webull Strategies -->
+  <h3 style="margin:32px 0 16px; color:#c5d4e4; font-size:18px;">📋 Greeks Profile ของกลยุทธ์ที่ใช้บน Webull</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Strategy</th>
+          <th>Delta</th>
+          <th>Gamma</th>
+          <th>Theta</th>
+          <th>Vega</th>
+          <th>โปรไฟล์</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cash Secured Put (CSP)</strong></td>
+          <td class="down">ลบ (short put)</td>
+          <td class="down">ลบ</td>
+          <td class="up">บวก ✓</td>
+          <td class="down">ลบ</td>
+          <td>ชอบ: ราคาทรงตัวหรือขึ้น, IV ลด, เวลาผ่าน</td>
+        </tr>
+        <tr>
+          <td><strong>Covered Call (CC)</strong></td>
+          <td class="up">บวก (long stock)</td>
+          <td class="down">ลบ (short call)</td>
+          <td class="up">บวก ✓</td>
+          <td class="down">ลบ</td>
+          <td>ชอบ: ราคาทรงตัว, IV ลด, เวลาผ่าน</td>
+        </tr>
+        <tr>
+          <td><strong>Collar</strong></td>
+          <td style="color:var(--muted);">Neutral-ish</td>
+          <td style="color:var(--muted);">Mixed</td>
+          <td class="up">บวก ✓</td>
+          <td style="color:var(--muted);">Mixed</td>
+          <td>ลด downside risk แลกกับ upside cap</td>
+        </tr>
+        <tr>
+          <td><strong>Long LEAPS (UUUU)</strong></td>
+          <td class="up">บวก (call)</td>
+          <td class="up">บวก</td>
+          <td class="down">ลบ</td>
+          <td class="up">บวก ✓</td>
+          <td>ชอบ: ราคาขึ้น, IV ขึ้น — ไม่ต้องรีบ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull — อ่าน Greeks อย่างไรให้ครบ</div>
+    <p><strong>ก่อนเปิด position:</strong> ดู Delta → ทิศทางเท่าไหร่? | ดู Theta → ได้/เสีย/วัน? | ดู Vega → IV risk เท่าไหร่?</p>
+    <p><strong>ระหว่างถือ position:</strong> ดู Gamma → delta กำลังวิ่งไปทิศไหน? — ถ้า gamma ของ short option สูงขึ้นมาก แสดงว่าความเสี่ยง accelerate</p>
+    <p><strong>เวลา roll หรือ adjust:</strong> คำนวณ Greeks รวมของ position ทั้งหมด (net delta, net theta) ไม่ใช่แค่ option ใหม่ที่กำลังเพิ่ม</p>
+    <p><strong>Rule of thumb:</strong> income seller (CSP/CC) ต้องการ theta บวก + vega ลบ + gamma ลบ → ต้องขาย option ตอน IV สูงกว่าปกติ (IVR &gt; 30%)</p>
+  </div>
+
+</section>
+
+<div class="divider" style="margin-top:56px;"></div>
+
+</div><!-- /page -->
+
+<center>
+  <a href="index.html" class="nav-btn active">หน้าแรก</a>
+  </center>
+
+  <!-- Footer nav -->
+ <div class="footer-nav">
+    <a href="natenberg_ch5.html" class="nav-btn active"> <- บทที่ 5 </a>
+    <div class="page-indicator">Ch.6 / 20</div>
+    <a href="natenberg_ch7.html" class="nav-btn active">บทที่ 7 →</a>
+  </div>
+
+
+</body>
+</html>

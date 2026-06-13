@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.7 — Introduction to Spreading</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Playfair+Display:wght@700&display=swap');
+
+  :root {
+    --bg:        #0b0f14;
+    --surface:   #111820;
+    --surface2:  #19222e;
+    --border:    #1f2d3d;
+    --gold:      #f5c842;
+    --gold-dim:  #a88a20;
+    --blue:      #4ea8de;
+    --green:     #3fba74;
+    --red:       #e05c5c;
+    --purple:    #a78bfa;
+    --orange:    #fb923c;
+    --cyan:      #22d3ee;
+    --text:      #dde5ee;
+    --muted:     #6b7f96;
+    --dim:       #3d5066;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    padding: 0 0 80px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0b0f14 0%, #0d1a26 55%, #0a1520 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 40px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '⇌';
+    position: absolute;
+    right: 8%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 220px;
+    color: #ffffff03;
+    pointer-events: none;
+    line-height: 1;
+  }
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .hero h1 span { color: var(--cyan); }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 650px;
+    line-height: 1.8;
+  }
+  .hero-sub em { color: var(--gold); font-style: normal; }
+
+  /* ── NAV ── */
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 99;
+  }
+  .toc a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: all .2s;
+  }
+  .toc a:hover { color: var(--cyan); border-color: #1a4a5a; background: #091520; }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 56px 0 0; }
+
+  /* ── SECTION HEADER ── */
+  .sec-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-icon {
+    font-size: 46px;
+    line-height: 1;
+    min-width: 60px;
+    text-align: center;
+    flex-shrink: 0;
+    padding-top: 4px;
+  }
+  .sec-head-text h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .sec-head-text .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .sec-head-text .pages {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── PROSE ── */
+  p { margin-bottom: 14px; color: var(--text); }
+  .lead { font-size: 16px; color: #c5d4e4; line-height: 1.8; margin-bottom: 20px; }
+
+  /* ── CARDS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 20px 0; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .card-body { font-size: 14px; color: #b0c0d4; line-height: 1.7; }
+  .card.accent-cyan  { border-color: #1a4a5a; background: #091520; }
+  .card.accent-gold  { border-color: var(--gold-dim); background: #16140a; }
+  .card.accent-green { border-color: #1e4a30; background: #0b1c14; }
+  .card.accent-red   { border-color: #4a1e1e; background: #1c0d0d; }
+  .card.accent-purple{ border-color: #3d2f66; background: #140f22; }
+  .card.accent-orange{ border-color: #5a3010; background: #1c1008; }
+
+  /* ── DEF LINE ── */
+  .def-line {
+    font-size: 14px;
+    background: var(--surface2);
+    border-left: 3px solid var(--cyan);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .def-line .key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    color: var(--cyan);
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  tbody tr:hover td { background: var(--surface2); }
+  .up   { color: var(--green); font-weight: 600; }
+  .down { color: var(--red);   font-weight: 600; }
+  .neutral { color: var(--muted); }
+
+  /* ── WEBULL BOX ── */
+  .webull-box {
+    background: linear-gradient(135deg, #0b1c14, #0d1a0f);
+    border: 1px solid #1e4a30;
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 24px 0;
+  }
+  .webull-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .webull-label::before { content: '📱'; font-size: 14px; }
+  .webull-box p { color: #9fcfb0; margin-bottom: 8px; font-size: 14px; }
+  .webull-box p:last-child { margin-bottom: 0; }
+  .webull-box strong { color: var(--green); }
+
+  /* ── INSIGHT ── */
+  .insight {
+    background: #16140a;
+    border: 1px solid var(--gold-dim);
+    border-left: 4px solid var(--gold);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #d4bc6a;
+    line-height: 1.75;
+  }
+  .insight-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* ── WARN ── */
+  .warn {
+    background: #1c0d0d;
+    border: 1px solid #4a1e1e;
+    border-left: 4px solid var(--red);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #e0a0a0;
+    line-height: 1.75;
+  }
+  .warn-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* ── NOTE / INFO ── */
+  .note {
+    background: #091520;
+    border: 1px solid #1a4a5a;
+    border-left: 4px solid var(--cyan);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #90c8dc;
+    line-height: 1.75;
+  }
+  .note-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* ── FORMULA ── */
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 20px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    text-align: center;
+  }
+  .formula-box .f-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .formula-box .f-main  { font-size: 18px; color: var(--gold); font-weight: 600; margin-bottom: 6px; }
+  .formula-box .f-note  { font-size: 12px; color: var(--muted); }
+
+  /* ── SPREAD DIAGRAM ── */
+  .spread-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  .sd-box {
+    flex: 1;
+    padding: 20px 18px;
+    text-align: center;
+  }
+  .sd-box .sd-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .sd-box .sd-action { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .sd-box .sd-desc   { font-size: 13px; color: var(--muted); }
+  .sd-arrow {
+    width: 44px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 24px;
+    color: var(--muted);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+  }
+
+  /* ── MARKET TYPE VISUAL ── */
+  .market-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .mv-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mv-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .mv-contango::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .mv-backward::before { background: linear-gradient(90deg, var(--red), transparent); }
+  .mv-title { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .mv-months {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 60px;
+    margin: 14px 0 8px;
+  }
+  .mv-bar {
+    flex: 1;
+    border-radius: 2px 2px 0 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #fff;
+    padding-bottom: 3px;
+    font-weight: 600;
+  }
+  .mv-body { font-size: 13px; color: #b0c0d4; }
+
+  /* ── CASINO ANALOGY ── */
+  .casino-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin: 20px 0;
+  }
+  .casino-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--orange); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .casino-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .casino-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+  }
+  .casino-col .c-who   { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
+  .casino-col .c-bet   { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .casino-col .c-risk  { font-size: 12px; }
+  .casino-col .c-edge  { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ── SPREAD TYPES ── */
+  .spread-types {
+    counter-reset: spread-counter;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .st-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .st-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 44px;
+    text-align: center;
+  }
+  .st-content h4 { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .st-content p  { font-size: 13px; color: #b0c0d4; margin: 0; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 48px 0 0;
+  }
+
+  /* ── TAGS ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .tag.cyan   { color: var(--cyan);   border-color: #1a4a5a; }
+  .tag.gold   { color: var(--gold);   border-color: var(--gold-dim); }
+  .tag.green  { color: var(--green);  border-color: #1e4a30; }
+  .tag.orange { color: var(--orange); border-color: #5a3010; }
+  .tag.purple { color: var(--purple); border-color: #3d2f66; }
+
+  h3 { margin: 28px 0 14px; color: #c5d4e4; font-size: 17px; font-weight: 600; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 72px;
+    border-top: 1px solid var(--border);
+    padding: 28px 40px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 36px 20px 32px; }
+    .hero h1 { font-size: 28px; }
+    .toc { padding: 14px 20px; }
+    .page { padding: 0 16px; }
+    .grid-2, .grid-3, .market-visual, .casino-grid { grid-template-columns: 1fr; }
+    .spread-diagram { flex-direction: column; }
+    .sd-arrow { width: 100%; padding: 8px 0; transform: rotate(90deg); }
+  }
+
+   .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 14px; }
+  .nav-btn.active { color: var(--accent); border-color: rgba(88,196,160,0.4); }
+  .page-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="hero">
+  <div class="page">
+    <div class="hero-eyebrow">Natenberg — Option Pricing &amp; Volatility · บทที่ 7</div>
+    <h1>Introduction to <span>Spreading</span></h1>
+    <p class="hero-sub">
+      นักเทรด options ที่ประสบความสำเร็จส่วนใหญ่ใช้ <em>spread strategies</em> —
+      ไม่ใช่เพราะกำไรมากกว่า แต่เพราะทนทานต่อ "โชคร้ายระยะสั้น" ได้
+      ในขณะที่ยังรักษา <em>theoretical edge</em> เอาไว้ครบ
+    </p>
+    <div class="tags" style="margin-top:18px;">
+      <span class="tag cyan">What Is a Spread</span>
+      <span class="tag gold">Why Spread</span>
+      <span class="tag green">Risk Management</span>
+      <span class="tag orange">Volatility Spread</span>
+      <span class="tag purple">Casino Analogy</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="toc">
+  <a href="#what">What Is a Spread?</a>
+  <a href="#types">ประเภท Spread</a>
+  <a href="#why">Why Spread?</a>
+  <a href="#risk">Risk Management Tool</a>
+  <a href="#webull">Webull Connections</a>
+</nav>
+
+<div class="page">
+
+<!-- ═══════════ INTRO ═══════════ -->
+<section id="what">
+  <div class="sec-head">
+    <div class="sec-icon">⇌</div>
+    <div class="sec-head-text">
+      <h2>What Is a Spread?</h2>
+      <div class="subtitle">DEFINITION &amp; CORE MECHANICS</div>
+      <div class="pages">pp. 127–132 · บทนิยาม &amp; ประเภทของ spread</div>
+    </div>
+  </div>
+
+  <p class="lead">
+    Natenberg เริ่มบทด้วยการเปรียบ 3 วิธีทำกำไรในตลาด options:
+    <strong>Scalping</strong> (ซื้อ bid-ขาย offer รัวๆ), <strong>Speculation</strong> (เดิมพันทิศทาง),
+    และ <strong>Spreading</strong> — ซึ่งเขาบอกว่านักเทรด options ที่ประสบความสำเร็จส่วนใหญ่ใช้
+  </p>
+
+  <div class="def-line">
+    <span class="key">Spread = ถือ position ตรงข้ามกัน 2 ฝั่งพร้อมกัน ในตราสารที่มี price relationship ต่อกัน</span>
+    Spread trader ไม่ได้เดาว่าตลาดจะขึ้นหรือลง
+    แต่เดาว่า <strong>ความสัมพันธ์ด้านราคา</strong> ระหว่างสองตราสารจะกลับสู่ระดับที่ควรจะเป็น
+  </div>
+
+  <!-- Spread Mechanism -->
+  <div class="spread-diagram">
+    <div class="sd-box">
+      <div class="sd-label">ฝั่ง Long</div>
+      <div class="sd-action" style="color:var(--green);">BUY</div>
+      <div class="sd-desc">ตราสารที่ <strong style="color:var(--green);">underpriced</strong><br>เทียบกับ relationship</div>
+    </div>
+    <div class="sd-arrow">+</div>
+    <div class="sd-box">
+      <div class="sd-label">ฝั่ง Short</div>
+      <div class="sd-action" style="color:var(--red);">SELL</div>
+      <div class="sd-desc">ตราสารที่ <strong style="color:var(--red);">overpriced</strong><br>เทียบกับ relationship</div>
+    </div>
+    <div class="sd-arrow">→</div>
+    <div class="sd-box">
+      <div class="sd-label">กำไรเมื่อ</div>
+      <div class="sd-action" style="color:var(--cyan);">CONVERGE</div>
+      <div class="sd-desc">ราคากลับสู่<br>ความสัมพันธ์ที่ถูกต้อง</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div class="note-label">📌 Spread ต่างจาก Outright Position อย่างไร</div>
+    <strong>Outright position:</strong> กำไร/ขาดทุนจากทิศทางตลาดล้วนๆ — ถ้าคาดผิดทิศ เสียหายเต็มๆ<br><br>
+    <strong>Spread position:</strong> กำไร/ขาดทุนจาก <em>ความแตกต่างในราคา</em> ระหว่างสองฝั่ง
+    — ตลาดขึ้นหรือลงพร้อมกัน เสียหายน้อย เพราะสองฝั่งหักล้างกัน
+    แต่ถ้า <em>ความสัมพันธ์</em> เปลี่ยน — นั่นแหละคือ profit opportunity
+  </div>
+</section>
+
+<!-- ═══════════ SPREAD TYPES ═══════════ -->
+<div class="divider"></div>
+<section id="types">
+  <div class="sec-head">
+    <div class="sec-icon" style="font-size:36px; padding-top:8px;">📊</div>
+    <div class="sec-head-text">
+      <h2>ประเภทของ Spread</h2>
+      <div class="subtitle">TYPES OF SPREADING STRATEGIES</div>
+      <div class="pages">pp. 127–132 · intra-market, inter-market, volatility spread</div>
+    </div>
+  </div>
+
+  <div class="spread-types">
+    <!-- Type 1 -->
+    <div class="st-item">
+      <div class="st-num" style="color:var(--cyan);">1</div>
+      <div class="st-content">
+        <h4>Intra-Market Spread (Calendar Spread)</h4>
+        <p>
+          ถือ opposite positions ใน <strong>commodity เดิม แต่ต่าง delivery month</strong><br>
+          ตัวอย่าง: Buy April Gold, Sell February Gold ที่ COMEX<br><br>
+          ราคาระหว่าง delivery months ถูกกำหนดโดย <strong>carrying cost</strong>
+          (ดอกเบี้ย + ค่าเก็บ + ค่าประกัน)<br><br>
+          ถ้า Feb Gold = $360, Interest Rate 9% annually, February→April = 2 เดือน:<br>
+          <code style="color:var(--gold);">9% × 2/12 × $360 = $5.40 carrying cost</code><br>
+          → April Gold ควรซื้อขายที่ ~$365.40<br>
+          ถ้าเห็น spread แคบกว่า $5.40 → spread underpriced → buy the spread
+        </p>
+      </div>
+    </div>
+
+    <!-- Type 2 -->
+    <div class="st-item">
+      <div class="st-num" style="color:var(--gold);">2</div>
+      <div class="st-content">
+        <h4>Inter-Market Spread</h4>
+        <p>
+          ถือ positions ใน <strong>ตราสารที่ต่างกัน แต่มีความสัมพันธ์กัน</strong><br>
+          ตัวอย่างจากหนังสือ:<br><br>
+          <strong>NOB Spread (Notes Over Bonds):</strong>
+          Long Treasury Notes, Short Treasury Bonds — เล่น yield curve<br><br>
+          <strong>Gold/Silver Ratio:</strong>
+          ถ้า ratio ปกติ = 80:1 แต่ตลาด gold = $375, silver = $4.50
+          (implied ratio 375/4.50 = 83.3x, แพงกว่าปกติ)
+          → Sell gold, Buy 80 ounces silver → กำไรเมื่อ ratio กลับมา 80:1<br><br>
+          <strong>Index Spread (S&amp;P 500 vs NYSE Composite):</strong>
+          เล่นว่า index ไหนจะ outperform อีกอัน
+        </p>
+      </div>
+    </div>
+
+    <!-- Type 3 -->
+    <div class="st-item" style="border-color:var(--gold-dim); background:#16140a;">
+      <div class="st-num" style="color:var(--gold);">3</div>
+      <div class="st-content">
+        <h4 style="color:var(--gold);">Volatility Spread ⭐ สำคัญที่สุดสำหรับ Options</h4>
+        <p>
+          ถือ options ที่มี implied volatility ต่างกัน ในทิศทางตรงข้าม<br>
+          <strong>ตัวอย่าง:</strong> Buy option ที่ IV = 15%, Sell option ที่ IV = 17%
+          → กำไรเมื่อ IV spread แคบลง (หรือ IV converge)<br><br>
+          Natenberg เน้น: <em>"Much of an option trader's education is spent studying
+          volatility relationships, and learning to create spreads based on mispriced volatility"</em><br><br>
+          ไม่ใช่แค่ดู spread ของ IV เป็นจุด แต่ต้องดูบริบทด้วย —
+          spread 2% ระหว่าง 6% และ 8% มีความหมายต่างจาก spread 2% ระหว่าง 26% และ 28% มาก
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contango vs Backwardation -->
+  <h3>Contango vs Backwardation — รูปแบบตลาด Futures</h3>
+  <div class="market-visual">
+    <div class="mv-card mv-contango">
+      <div class="mv-title" style="color:var(--green);">📈 CONTANGO (ปกติ)</div>
+      <p style="font-size:13px; color:#b0c0d4; margin-bottom:10px;">
+        Month ไกล ราคา<strong style="color:var(--green);"> สูงกว่า</strong> month ใกล้<br>
+        เกิดจาก carrying cost (ดอกเบี้ย + เก็บ + ประกัน)
+      </p>
+      <div class="mv-months">
+        <div class="mv-bar" style="background:#1e3a1e; height:35%;">Dec</div>
+        <div class="mv-bar" style="background:#1e4a1e; height:50%;">Mar</div>
+        <div class="mv-bar" style="background:#1e5a1e; height:65%;">Jun</div>
+        <div class="mv-bar" style="background:#1e6a1e; height:80%;">Sep</div>
+        <div class="mv-bar" style="background:#1e7a1e; height:95%;">Dec</div>
+      </div>
+      <div class="mv-body">ตัวอย่าง: Cocoa, Cotton, Soybean Meal</div>
+    </div>
+    <div class="mv-card mv-backward">
+      <div class="mv-title" style="color:var(--red);">📉 BACKWARDATION (ผิดปกติ)</div>
+      <p style="font-size:13px; color:#b0c0d4; margin-bottom:10px;">
+        Month ใกล้ ราคา<strong style="color:var(--red);"> สูงกว่า</strong> month ไกล<br>
+        เกิดจาก supply shortage (อุปทานตึง ตอนนี้แพงกว่าอนาคต)
+      </p>
+      <div class="mv-months">
+        <div class="mv-bar" style="background:#4a1e1e; height:95%;">Dec</div>
+        <div class="mv-bar" style="background:#4a1e1e; height:75%;">Feb</div>
+        <div class="mv-bar" style="background:#3a1e1e; height:60%;">Apr</div>
+        <div class="mv-bar" style="background:#2a1e1e; height:45%;">Jun</div>
+        <div class="mv-bar" style="background:#1e1414; height:30%;">Aug</div>
+      </div>
+      <div class="mv-body">ตัวอย่าง: Cattle, Copper, Heating Oil</div>
+    </div>
+  </div>
+
+  <!-- Static vs Dynamic Spread -->
+  <h3>Static vs Dynamic Spread</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title" style="color:var(--blue);">Static Spread</div>
+      <div class="card-body">
+        ตั้ง position แล้ว<strong>รอ</strong>ให้ราคา converge<br><br>
+        ไม่มีการ adjust ระหว่างทาง<br>
+        Profit จากการที่ spread กลับสู่ fair value<br><br>
+        ตัวอย่าง: Buy April Gold / Sell Feb Gold แล้วรอ
+      </div>
+    </div>
+    <div class="card accent-gold">
+      <div class="card-title" style="color:var(--gold);">Dynamic Spread ⭐</div>
+      <div class="card-body">
+        Adjust position <strong>ตลอดอายุ</strong> ของ spread<br><br>
+        เหมือน Chapter 5 — delta hedge ต่อเนื่อง<br>
+        ใช้จับ theoretical edge ผ่าน hedging adjustments<br><br>
+        กำไรสุดท้าย ≈ ส่วนที่ option mispriced ตั้งแต่แรก
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ WHY SPREAD ═══════════ -->
+<div class="divider"></div>
+<section id="why">
+  <div class="sec-head">
+    <div class="sec-icon" style="font-size:36px; padding-top:8px;">🎯</div>
+    <div class="sec-head-text">
+      <h2>Why Spread?</h2>
+      <div class="subtitle">THE CORE RATIONALE FOR SPREADING</div>
+      <div class="pages">pp. 132–133 · ทำไมต้องใช้ spread ไม่ใช่ outright position</div>
+    </div>
+  </div>
+
+  <p class="lead">
+    ปัญหาหลักของ options trading คือ probability theory <strong>ต้องใช้เวลานาน</strong>จึงจะทำงาน
+    ในระยะสั้น "โชคร้าย" สามารถทำให้นักเทรดหมดทุนได้ก่อนที่ edge จะแสดงผล
+    Spread คือเกราะป้องกัน "โชคร้ายระยะสั้น" ในขณะที่รักษา long-run edge เอาไว้
+  </p>
+
+  <div class="warn">
+    <div class="warn-label">⚠ ปัญหา: Outright Position เสี่ยงมากเกินไป</div>
+    สมมติ: Call theoretical value = 1.75 แต่ตลาดซื้อขายที่ 2.00
+    → Sell call 40 สัญญา + Buy 10 futures (delta hedge 4×1)
+    → Expected profit = 40 × 0.25 × $1,250/pt = <strong>$12,500</strong><br><br>
+    แต่ถ้า volatility estimate ผิด (คิดว่า 13% แต่จริงๆ 17%):
+    → Call ที่ IV 17% มีค่า 2.25 ไม่ใช่ 2.00
+    → กลับมาขาดทุน $12,500 แทน<br><br>
+    <strong>ถ้าทำ 400×100 (เพื่อหวังกำไร $125,000) → ขาดทุน $125,000 ทันทีถ้า vol estimate ผิดแค่ 4%</strong>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 Spread Solution — เพิ่ม Margin for Error</div>
+    การ spread ช่วยให้:<br><br>
+    <strong>①</strong> Break-even volatility สูงขึ้น — ต้องผิดมากกว่าจึงจะขาดทุน<br>
+    <strong>②</strong> ลด sensitivity ต่อ input ที่ประมาณผิด<br>
+    <strong>③</strong> สามารถ size position ใหญ่ขึ้นได้ โดยรับ risk น้อยกว่า outright position<br><br>
+    Natenberg: <em>"Option spreading strategies enable traders to profit over a wide variety
+    of market conditions by giving them an increased margin for error in estimating
+    the inputs into a theoretical pricing model."</em>
+  </div>
+
+  <!-- The Core Trade-off -->
+  <h3>Spread ลดอะไร? และแลกกับอะไร?</h3>
+  <div class="grid-2">
+    <div class="card accent-green">
+      <div class="card-title" style="color:var(--green);">✓ Spread ลด</div>
+      <div class="card-body">
+        • Short-term "bad luck" impact<br>
+        • ความเสี่ยงจาก input estimate ผิด<br>
+        • Forced liquidation ก่อนกำไรถึง<br>
+        • Directional risk (ตลาดขึ้น/ลงพร้อมกัน ไม่เจ็บ)
+      </div>
+    </div>
+    <div class="card accent-red">
+      <div class="card-title" style="color:var(--red);">✗ Spread แลกกับ</div>
+      <div class="card-body">
+        • Profit สูงสุดน้อยลง (เทียบกับ outright)<br>
+        • ซับซ้อนในการ execute (2 legs)<br>
+        • Transaction cost สูงกว่า<br>
+        • ต้องเข้าใจ relationship ระหว่าง legs
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div class="note-label">📌 Volatility Spread — ซับซ้อนกว่าที่คิด</div>
+    ซื้อ option IV 15%, ขาย option IV 17% → ดูเหมือน profit แน่ๆ แต่ Natenberg เตือนว่า:<br><br>
+    <strong>General level ของ IV สำคัญมาก</strong> — spread 2% ที่ IV 6%/8% ≠ spread 2% ที่ 26%/28%<br>
+    เพราะที่ IV ต่ำ ความแตกต่างเล็กน้อยอาจไม่มีนัยสำคัญ
+    แต่ที่ IV สูง spread เดิมอาจเป็น opportunity ใหญ่มาก<br><br>
+    → ต้องดู <strong>relative mispricing</strong> ไม่ใช่แค่ absolute spread
+  </div>
+</section>
+
+<!-- ═══════════ RISK MANAGEMENT ═══════════ -->
+<div class="divider"></div>
+<section id="risk">
+  <div class="sec-head">
+    <div class="sec-icon" style="font-size:36px; padding-top:8px;">🎰</div>
+    <div class="sec-head-text">
+      <h2>Spreading as a Risk Management Tool</h2>
+      <div class="subtitle">THE CASINO ANALOGY</div>
+      <div class="pages">pp. 133–135 · casino analogy &amp; professional risk management</div>
+    </div>
+  </div>
+
+  <p class="lead">
+    Natenberg ใช้ <strong>casino analogy</strong> อธิบายว่าทำไม spreading ถึงสำคัญ —
+    และทำไม experienced traders ถึงมี risk <strong>น้อยกว่า</strong> traders หน้าใหม่
+    ทั้งที่เทรด size ใหญ่กว่ามาก
+  </p>
+
+  <!-- Casino Scenarios -->
+  <div class="casino-box">
+    <div class="casino-title">🎰 Casino Roulette — 3 Scenarios (5% edge ทุก scenario)</div>
+    <div class="casino-grid">
+      <div class="casino-col">
+        <div class="c-who">Scenario A</div>
+        <div class="c-bet" style="color:var(--red);">$2,000</div>
+        <div class="c-bet" style="font-size:14px; color:var(--text);">1 คน, 1 เลข</div>
+        <div class="c-risk" style="color:var(--red);">Max Loss: $70,000<br>(ถ้าโดนจ่าย jackpot)</div>
+        <div class="c-edge">Edge: 5% ✓<br>Risk: สูงมาก ❌</div>
+      </div>
+      <div class="casino-col">
+        <div class="c-who">Scenario B</div>
+        <div class="c-bet" style="color:var(--orange);">$1,000 × 2</div>
+        <div class="c-bet" style="font-size:14px; color:var(--text);">2 คน, ต่างเลข</div>
+        <div class="c-risk" style="color:var(--orange);">Max Loss: $34,000<br>(ชนะได้แค่ 1 คน)</div>
+        <div class="c-edge">Edge: 5% ✓<br>Risk: ลดลงครึ่ง ✓</div>
+      </div>
+      <div class="casino-col" style="border-color:var(--green);">
+        <div class="c-who">Ideal (Spread)</div>
+        <div class="c-bet" style="color:var(--green);">$1,000 × 38</div>
+        <div class="c-bet" style="font-size:14px; color:var(--text);">38 คน, ครบทุกเลข</div>
+        <div class="c-risk" style="color:var(--green);">Guaranteed profit<br>$38,000 in - $36,000 out = $2,000 ✓</div>
+        <div class="c-edge">Edge: 5% ✓<br>Risk: ต่ำที่สุด ✅</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 สรุปหลักการจาก Casino Analogy</div>
+    <strong>Edge เหมือนกัน ทุก scenario (5%) — แต่ risk ต่างกันมาก</strong><br><br>
+    Casino ไม่ชอบ "big single bet" แม้ odds ยังเป็น favor of the house<br>
+    เพราะถ้า bettor โชคดีวันเดียว casino อาจขาดทุนครั้งเดียวมากกว่ากำไรทั้งเดือน<br><br>
+    <strong>Option trader ทำเหมือนกัน:</strong>
+    กระจาย risk ออกหลาย spread positions หลาย instruments หลายทิศทาง
+    เพื่อให้ law of large numbers ทำงานได้ → edge แสดงผลสม่ำเสมอ
+  </div>
+
+  <!-- Professional vs Amateur Risk -->
+  <h3>ทำไม Big Professional Trader ถึง "เสี่ยงน้อยกว่า" Small Retail Trader?</h3>
+
+  <div class="grid-2">
+    <div class="card accent-purple">
+      <div class="card-title" style="color:var(--purple);">Floor Trader ซื้อ 100 Calls @ $2,000</div>
+      <div class="card-body">
+        Position value = $200,000<br>
+        ฟังดู "เสี่ยง" มาก แต่…<br><br>
+        เขา spread off risk ด้วย <strong>options อื่น + futures + cash bonds</strong>
+        ให้ net risk เหลือเพียงเล็กน้อย<br><br>
+        Risk จริงๆ อาจน้อยกว่านักเทรดหน้าใหม่ที่ถือแค่ 5 calls โดยไม่ hedge เลย
+      </div>
+    </div>
+    <div class="card accent-red">
+      <div class="card-title" style="color:var(--red);">Retail Trader ถือ 5 Calls</div>
+      <div class="card-body">
+        Position value เล็กกว่ามาก แต่…<br><br>
+        ไม่ได้ hedge อะไรเลย → รับ full delta, gamma, vega, theta risk<br><br>
+        <strong>Net risk อาจสูงกว่า</strong> professional มาก ถ้าวัดเป็น % ของ capital
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div class="note-label">📌 บทเรียนสำคัญจาก Natenberg</div>
+    <em>"The intelligent option trader learns to spread off his risk in as many different
+    ways as possible in order to minimize the effects of short-term bad luck."</em><br><br>
+    ไม่มี "perfect spread" เหมือน casino scenario ที่ครอบทุกเลข
+    แต่ยิ่งกระจาย risk ได้มากเท่าไหร่ ยิ่งทำให้ probability ทำงานได้ดีขึ้น
+  </div>
+</section>
+
+<!-- ═══════════ WEBULL CONNECTIONS ═══════════ -->
+<div class="divider"></div>
+<section id="webull">
+  <div class="sec-head">
+    <div class="sec-icon" style="font-size:36px; padding-top:8px;">📱</div>
+    <div class="sec-head-text">
+      <h2>Webull Thailand — ต่อยอดแนวคิด Ch.7</h2>
+      <div class="subtitle">APPLYING SPREADING CONCEPTS TO YOUR PORTFOLIO</div>
+      <div class="pages">~$2,000 capital · Webull constraint awareness</div>
+    </div>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">ทำไม CSP + CC คือ Volatility Spread ชนิดหนึ่ง</div>
+    <p>
+      <strong>CSP (Cash Secured Put):</strong> Short put → short vega, positive theta<br>
+      <strong>Covered Call:</strong> Long stock + Short call → ลด net delta, positive theta
+    </p>
+    <p>
+      ทั้งสองกลยุทธ์เป็น "short volatility" position โดยปริยาย —
+      ซึ่งตาม Natenberg คือ short vega spread ที่เดิมพันว่า <strong>IV ที่ตลาดให้ไว้ (implied vol)
+      สูงกว่า realized vol จริงๆ ที่จะเกิดขึ้น</strong><br>
+      นั่นคือ Volatility Risk Premium (VRP) ที่เราพูดถึงใน framework การเทรด
+    </p>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Collar = Spread สองชั้น</div>
+    <p>
+      Long stock + Long put + Short call = คือการ spread ทั้ง downside risk (put) และ upside cap (call)<br>
+      Collar ลด net vega exposure เพราะ long put (long vega) + short call (short vega) หักล้างกันบางส่วน
+    </p>
+    <p>
+      Natenberg บอกว่า spread ที่ดีลด sensitivity ต่อ <strong>input errors</strong> —
+      ถ้าเราประมาณ IV หรือ direction ผิด collar ช่วยป้องกัน
+      ซึ่งตรงกับสิ่งที่ทำกับ TE position: collar ช่วยจำกัด downside เมื่อ TE ดิ่ง 19%
+    </p>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">Webull Constraint — ทำไม Spread บางแบบทำไม่ได้</div>
+    <p>
+      Webull Thailand <strong>ไม่อนุญาตให้ใช้ LEAPS เป็น collateral</strong> สำหรับ short options
+      → ทำให้ vertical spread (buy call + sell higher call) และ diagonal spread ทำได้จำกัด
+    </p>
+    <p>
+      ตาม Ch.7 — spread ที่ดีต้องมีทั้งสองฝั่ง หากทำ short side ไม่ได้ก็ไม่ใช่ spread จริงๆ
+      → กลยุทธ์ที่ทำได้บน Webull จริงๆ ยังคือ: <strong>CSP, CC, Collar, Long LEAPS (outright)</strong>
+    </p>
+  </div>
+
+  <div class="webull-box">
+    <div class="webull-label">UUUU LEAPS — Spread แนวคิด (ไม่ใช่ formal spread)</div>
+    <p>
+      Long LEAPS UUUU ที่ IVR ต่ำ (~5%) ไม่ใช่ spread ในแบบ Natenberg
+      แต่มีแนวคิดคล้าย: <strong>ซื้อ underpriced volatility (IV ต่ำ) เดิมพันว่า IV จะกลับขึ้น</strong>
+      ซึ่งเป็น "long vol" position ที่มี catalyst (China magnet ban → uncertainty จะดันให้ IV สูงขึ้น)
+    </p>
+    <p>
+      ถ้าจะทำให้เป็น spread จริงๆ ตาม Ch.7: ต้องขาย short-dated call ด้วย (Diagonal Spread)
+      — แต่ Webull ไม่อนุญาต → รับ LEAPS outright ไปก่อน แต่รู้ว่ามี full vega risk
+    </p>
+  </div>
+
+  <!-- Summary Connection Table -->
+  <h3>สรุปการโยง Ch.7 กับ Portfolio ปัจจุบัน</h3>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>แนวคิด Ch.7</th>
+          <th>สิ่งที่ทำบน Webull</th>
+          <th>Connection</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Volatility Spread</strong><br>(buy low IV / sell high IV)</td>
+          <td>CSP/CC ขายตอน IVR สูง<br>(short vol เมื่อ IV overpriced)</td>
+          <td class="up">ใช้หลักการเดิม</td>
+        </tr>
+        <tr>
+          <td><strong>Static Spread</strong><br>(set &amp; wait to converge)</td>
+          <td>CSP ที่ถือจนหมดอายุ</td>
+          <td class="up">ตรงกัน</td>
+        </tr>
+        <tr>
+          <td><strong>Dynamic Spread</strong><br>(adjust over time)</td>
+          <td>Roll / Adjust position เมื่อ TE เกิด event</td>
+          <td style="color:var(--gold);">บางส่วน</td>
+        </tr>
+        <tr>
+          <td><strong>Multi-leg Spread</strong><br>(vertical, diagonal)</td>
+          <td>ทำไม่ได้เต็มรูปแบบ (Webull constraint)</td>
+          <td class="down">จำกัด</td>
+        </tr>
+        <tr>
+          <td><strong>Casino: กระจาย risk</strong></td>
+          <td>มีหลาย positions: TE, UUUU (planned), IGV</td>
+          <td class="up">ดี — diversified</td>
+        </tr>
+        <tr>
+          <td><strong>Margin for error</strong><br>(ยอมประมาณ IV ผิดได้)</td>
+          <td>CSP delta 20-25 → buffer ถึง 75-80%</td>
+          <td class="up">ใช้หลักการนี้</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<div class="divider" style="margin-top:56px;"></div>
+
+</div><!-- /page -->
+<center>
+  <a href="index.html" class="nav-btn active">หน้าแรก</a>
+  </center>
+
+  <!-- Footer nav -->
+ <div class="footer-nav">
+    <a href="natenberg_ch5.html" class="nav-btn active"> <- บทที่ 6 </a>
+    <div class="page-indicator">Ch.7 / 20</div>
+    <a href="natenberg_ch7.html" class="nav-btn active">บทที่ 8 →</a>
+  </div>
+
+
+</body>
+</html>

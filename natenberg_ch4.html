@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Natenberg Ch.4 — Volatility</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: #2a3441;
+    --accent: #58c4a0;
+    --accent2: #f0a050;
+    --accent3: #e06c75;
+    --accent4: #79b8ff;
+    --accent5: #c678dd;
+    --text: #cdd9e5;
+    --text-dim: #768390;
+    --text-bright: #f0f6fc;
+    --tag-bg: #1a2f26;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 28px 24px 24px; }
+  .book-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .chapter-tag { display: inline-block; background: var(--tag-bg); color: var(--accent); font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 3px; border: 1px solid rgba(88,196,160,0.3); margin-bottom: 12px; }
+  .star-tag { display: inline-block; background: rgba(240,160,80,0.12); color: var(--accent2); font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 3px; border: 1px solid rgba(240,160,80,0.3); margin-bottom: 12px; margin-left: 6px; }
+  .chapter-title { font-size: 22px; font-weight: 600; color: var(--text-bright); line-height: 1.3; margin-bottom: 8px; }
+  .chapter-subtitle { font-size: 13px; color: var(--text-dim); }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .tldr { background: #0e1f18; border: 1px solid rgba(88,196,160,0.4); border-left: 3px solid var(--accent); border-radius: 6px; padding: 16px 18px; margin-bottom: 28px; }
+  .tldr-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  .tldr p { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  .section { margin-bottom: 32px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .section-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); background: var(--tag-bg); border: 1px solid rgba(88,196,160,0.25); padding: 2px 7px; border-radius: 3px; }
+  .section-title { font-size: 14px; font-weight: 600; color: var(--text-bright); letter-spacing: 0.3px; }
+
+  .body-text { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
+
+  /* Interactive vol calculator */
+  .calc-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+  .calc-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 1px; margin-bottom: 14px; }
+  .calc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .calc-label { font-size: 12px; color: var(--text-dim); width: 110px; flex-shrink: 0; }
+  .calc-row input[type=range] { flex: 1; accent-color: var(--accent); height: 4px; }
+  .calc-val { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-bright); width: 70px; text-align: right; flex-shrink: 0; }
+  .calc-output { background: var(--surface2); border-radius: 6px; padding: 14px; margin-top: 4px; }
+  .calc-out-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .calc-out-row:last-child { border-bottom: none; }
+  .calc-out-label { font-size: 12px; color: var(--text-dim); }
+  .calc-out-val { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; }
+
+  /* SD band visual */
+  .sd-visual { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 14px; }
+  .sd-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); margin-bottom: 12px; letter-spacing: 1px; }
+
+  /* 68/95/99.7 table */
+  .sd-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; }
+  .sd-table th { background: var(--surface2); color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+  .sd-table td { padding: 8px 10px; border: 1px solid var(--border); color: var(--text); background: var(--surface); }
+  .sd-table tr:hover td { background: var(--surface2); }
+
+  .concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 480px) { .concept-grid { grid-template-columns: 1fr; } .calc-row { flex-wrap: wrap; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .card-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: var(--accent); margin-bottom: 5px; }
+  .card p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .formula { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin: 10px 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--accent); text-align: center; }
+  .formula .comment { font-size: 11px; color: var(--text-dim); margin-top: 4px; font-family: 'IBM Plex Sans Thai', sans-serif; }
+
+  .note { background: #1a1e2a; border: 1px solid rgba(240,160,80,0.3); border-left: 3px solid var(--accent2); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .note-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent2); margin-bottom: 6px; }
+  .note p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .warning { background: #1f1316; border: 1px solid rgba(224,108,117,0.3); border-left: 3px solid var(--accent3); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .warning-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent3); margin-bottom: 6px; }
+  .warning p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .insight { background: #1a1525; border: 1px solid rgba(198,120,221,0.3); border-left: 3px solid var(--accent5); border-radius: 6px; padding: 12px 15px; margin-bottom: 14px; }
+  .insight-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--accent5); margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  .quote { background: var(--surface2); border-left: 3px solid var(--accent5); border-radius: 0 6px 6px 0; padding: 14px 16px; margin-bottom: 16px; font-style: italic; }
+  .quote p { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .quote-source { font-size: 11px; color: var(--text-dim); margin-top: 6px; font-style: normal; font-family: 'IBM Plex Mono', monospace; }
+
+  /* 4 types of vol cards */
+  .voltype-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .voltype { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .voltype-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .vt-future { background: rgba(121,184,255,0.15); color: var(--accent4); }
+  .vt-hist { background: rgba(88,196,160,0.15); color: var(--accent); }
+  .vt-forecast { background: rgba(240,160,80,0.15); color: var(--accent2); }
+  .vt-implied { background: rgba(224,108,117,0.15); color: var(--accent3); }
+  .voltype-content { flex: 1; }
+  .voltype-name { font-size: 13px; font-weight: 600; color: var(--text-bright); margin-bottom: 3px; }
+  .voltype-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* IV reverse diagram */
+  .iv-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+  .iv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .iv-cols { grid-template-columns: 1fr; } }
+  .iv-col { background: var(--surface2); border-radius: 6px; padding: 14px; }
+  .iv-col-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .iv-col.normal .iv-col-title { color: var(--accent); }
+  .iv-col.reverse .iv-col-title { color: var(--accent3); }
+  .iv-item { font-size: 12px; color: var(--text); padding: 4px 0; display: flex; align-items: center; gap: 6px; }
+  .iv-item .known { color: var(--text-dim); }
+  .iv-item .unknown { color: var(--accent2); font-weight: 500; }
+
+  .practical { background: #0d1a24; border: 1px solid rgba(88,196,160,0.2); border-radius: 6px; padding: 16px; margin-top: 14px; }
+  .practical-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 10px; }
+  .practical p { font-size: 13px; color: var(--text); line-height: 1.65; }
+  .practical p + p { margin-top: 8px; }
+
+  .checklist { list-style: none; margin-top: 10px; }
+  .checklist li { font-size: 13px; color: var(--text); padding: 6px 0 6px 22px; position: relative; line-height: 1.5; border-bottom: 1px solid var(--border); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
+
+  strong { color: var(--text-bright); font-weight: 500; }
+  .em-green { color: var(--accent); font-weight: 500; }
+  .em-orange { color: var(--accent2); font-weight: 500; }
+  .em-red { color: var(--accent3); font-weight: 500; }
+  .em-blue { color: var(--accent4); font-weight: 500; }
+  .em-purple { color: var(--accent5); font-weight: 500; }
+
+  .footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 14px; }
+  .nav-btn.active { color: var(--accent); border-color: rgba(88,196,160,0.4); }
+  .page-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="book-label">Natenberg · Option Volatility & Pricing · 1994</div>
+  <div class="chapter-tag">CHAPTER 04</div><span class="star-tag">⭐ บทสำคัญที่สุด</span>
+  <div class="chapter-title">Volatility</div>
+  <div class="chapter-subtitle">สรุปเนื้อหา · Volatility คืออะไร, วัดยังไง, และ 4 ประเภทที่ต้องแยกให้ออก</div>
+</div>
+
+<div class="container">
+
+  <!-- TL;DR -->
+  <div class="tldr">
+    <div class="tldr-label">TL;DR</div>
+    <p>บทนี้คือหัวใจของทั้งเล่ม — <strong>Volatility = Standard Deviation ของ price change ต่อปี</strong> · ใช้กฎ 68/95/99.7 คาดการณ์ range ราคาได้ · scale ด้วย √time สำหรับ daily/weekly · และที่สำคัญสุดคือต้องแยก <strong>4 ประเภทของ vol</strong> ให้ออก โดยเฉพาะ <span class="em-red">Implied Volatility</span> ที่เป็นกุญแจสู่ IV Crush</p>
+  </div>
+
+  <!-- Section 1: What is Volatility -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Volatility = Speed ของตลาด</span>
+    </div>
+
+    <div class="quote">
+      <p>"In a sense, volatility is a measure of the speed of the market. Markets which move slowly are low-volatility markets; markets which move quickly are high-volatility markets."</p>
+      <div class="quote-source">— Natenberg, Chapter 4</div>
+    </div>
+
+    <p class="body-text">Natenberg ใช้ <strong>pinball maze</strong> (เครื่องหยอดลูกบอล) อธิบาย — ลูกบอลตกผ่านตะปู แต่ละครั้งมี 50/50 ที่จะไปซ้าย/ขวา เมื่อหยอดลูกบอลมากๆ จะได้ <strong>Normal Distribution</strong> (เส้นโค้งระฆัง)</p>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">Low Volatility</div>
+        <p>เส้นโค้งแคบ สูง — ราคาเคลื่อนไหวน้อย โอกาสไปไกลจากจุดเริ่มต่ำ → option ราคาถูก</p>
+      </div>
+      <div class="card">
+        <div class="card-label">High Volatility</div>
+        <p>เส้นโค้งกว้าง เตี้ย — ราคาเคลื่อนไหวมาก โอกาส ITM สูง → option ราคาแพง</p>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 ทำไม vol สูงทำให้ทั้ง call และ put แพงขึ้น</div>
+      <p>option ขาดทุนจำกัด (เสียแค่ premium) แต่กำไรไม่จำกัด — เมื่อ distribution กว้างขึ้น ฝั่ง upside ที่กำไรเพิ่มขึ้น <em class="em-purple">ไม่ถูกหักล้าง</em>ด้วยฝั่ง downside (เพราะ call ตกได้แค่ถึง 0) → ทำให้มูลค่า option เพิ่มขึ้นเสมอ</p>
+    </div>
+  </div>
+
+  <!-- Section 2: Volatility = Standard Deviation -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">นิยามที่แท้จริง · Volatility = 1 Standard Deviation ต่อปี</span>
+    </div>
+
+    <div class="formula">
+      Volatility = 1 Standard Deviation price change (%), 1 ปี
+      <div class="comment">เช่น vol 20% = คาดว่าปีหน้าราคาจะอยู่ใน ±20% ประมาณ 68% ของเวลา</div>
+    </div>
+
+    <p class="body-text">นี่คือนิยามที่ทำให้ vol เป็นตัวเลขที่ feed เข้า model ได้ — เมื่อรู้ว่า price distribution เป็น Normal เราอธิบายมันได้ด้วยแค่ 2 ตัวเลข: <strong>Mean</strong> (จุดกึ่งกลาง = forward price) และ <strong>Standard Deviation</strong> (ความกว้าง = volatility)</p>
+
+    <!-- 68/95/99.7 rule -->
+    <div class="sd-visual">
+      <div class="sd-title">กฎ 68 / 95 / 99.7 — Standard Deviation Bands</div>
+      <svg viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+        <!-- baseline -->
+        <line x1="30" y1="150" x2="470" y2="150" stroke="#2a3441" stroke-width="1"/>
+        <!-- bell curve path -->
+        <path d="M 30,150 Q 110,148 150,135 Q 200,115 230,70 Q 250,40 250,38 Q 250,40 270,70 Q 300,115 350,135 Q 390,148 470,150" fill="none" stroke="#58c4a0" stroke-width="2"/>
+        <!-- shaded 1 SD -->
+        <path d="M 190,150 Q 215,118 230,70 Q 250,40 250,38 Q 250,40 270,70 Q 285,118 310,150 Z" fill="rgba(88,196,160,0.18)"/>
+        <!-- SD vertical lines -->
+        <line x1="250" y1="38" x2="250" y2="150" stroke="#768390" stroke-width="1" stroke-dasharray="2,2"/>
+        <line x1="190" y1="100" x2="190" y2="150" stroke="#58c4a0" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="310" y1="100" x2="310" y2="150" stroke="#58c4a0" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="130" y1="135" x2="130" y2="150" stroke="#f0a050" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="370" y1="135" x2="370" y2="150" stroke="#f0a050" stroke-width="1" stroke-dasharray="3,3"/>
+        <!-- labels -->
+        <text x="250" y="168" fill="#768390" font-size="10" font-family="monospace" text-anchor="middle">mean</text>
+        <text x="190" y="168" fill="#58c4a0" font-size="10" font-family="monospace" text-anchor="middle">−1σ</text>
+        <text x="310" y="168" fill="#58c4a0" font-size="10" font-family="monospace" text-anchor="middle">+1σ</text>
+        <text x="130" y="168" fill="#f0a050" font-size="10" font-family="monospace" text-anchor="middle">−2σ</text>
+        <text x="370" y="168" fill="#f0a050" font-size="10" font-family="monospace" text-anchor="middle">+2σ</text>
+        <!-- percentage labels -->
+        <text x="250" y="100" fill="#58c4a0" font-size="11" font-family="monospace" text-anchor="middle" font-weight="600">68.3%</text>
+        <text x="250" y="28" fill="#f0a050" font-size="10" font-family="monospace" text-anchor="middle">95.4% within ±2σ</text>
+      </svg>
+    </div>
+
+    <table class="sd-table">
+      <thead>
+        <tr><th>RANGE</th><th>PROBABILITY</th><th>ความหมาย</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>±1σ</strong></td><td class="em-green">68.3%</td><td>ประมาณ 2 ใน 3 ของเวลา</td></tr>
+        <tr><td><strong>±2σ</strong></td><td class="em-orange">95.4%</td><td>ประมาณ 19 ใน 20 ของเวลา</td></tr>
+        <tr><td><strong>±3σ</strong></td><td class="em-red">99.7%</td><td>ประมาณ 369 ใน 370 — เกินนี้คือ rare event</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <div class="note-label">ตัวอย่างจากหนังสือ</div>
+      <p>หุ้น $108 (forward price), vol 20% → 1σ = 20% × $108 = $21.60<br>
+      ปีหน้าคาดว่าราคาอยู่ที่ <strong>$86.40–$129.60</strong> (±1σ) ประมาณ 68% ของเวลา · อยู่ที่ $64.80–$151.30 (±2σ) ประมาณ 95%</p>
+    </div>
+  </div>
+
+  <!-- Section 3: Interactive SD Calculator -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">ลองคำนวณเอง · Volatility → Price Range</span>
+    </div>
+
+    <div class="calc-box">
+      <div class="calc-title">VOLATILITY CALCULATOR — ปรับค่าดูผล</div>
+      <div class="calc-row">
+        <span class="calc-label">ราคาปัจจุบัน ($)</span>
+        <input type="range" id="price" min="10" max="500" value="100" step="1" oninput="calcVol()">
+        <span class="calc-val" id="price-v">$100</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">Volatility (%)</span>
+        <input type="range" id="vol" min="5" max="120" value="30" step="1" oninput="calcVol()">
+        <span class="calc-val" id="vol-v">30%</span>
+      </div>
+      <div class="calc-output">
+        <div class="calc-out-row">
+          <span class="calc-out-label">±1σ ต่อปี (68% ของเวลา)</span>
+          <span class="calc-out-val em-green" id="out-1y">—</span>
+        </div>
+        <div class="calc-out-row">
+          <span class="calc-out-label">1σ Daily move (÷16)</span>
+          <span class="calc-out-val em-orange" id="out-daily">—</span>
+        </div>
+        <div class="calc-out-row">
+          <span class="calc-out-label">1σ Weekly move (÷7.2)</span>
+          <span class="calc-out-val em-blue" id="out-weekly">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Square Root of Time -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Scaling ด้วย √Time · จากปี → วัน → สัปดาห์</span>
+    </div>
+
+    <div class="quote">
+      <p>"An important characteristic of volatility is that it is proportional to the square root of time."</p>
+      <div class="quote-source">— Natenberg, Chapter 4</div>
+    </div>
+
+    <p class="body-text">Vol ที่บอกมาเป็น annual แต่ option ส่วนใหญ่อายุสั้นกว่าปี ต้อง scale ด้วย √(จำนวน period ใน 1 ปี):</p>
+
+    <div class="formula">
+      Daily Vol = Annual Vol ÷ √256 = Annual ÷ 16
+      <div class="comment">256 trading days/ปี → √256 = 16</div>
+    </div>
+
+    <div class="formula">
+      Weekly Vol = Annual Vol ÷ √52 = Annual ÷ 7.2
+      <div class="comment">52 weeks/ปี → √52 ≈ 7.2</div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ตัวอย่าง — หุ้น $45, vol 28%</div>
+      <p><strong>Daily:</strong> 28%/16 × $45 = 1.75% × $45 = <strong class="em-orange">$0.79</strong> → คาด move ≤$0.79 ประมาณ 2 ใน 3 วัน<br>
+      <strong>Weekly:</strong> 28%/7.2 × $45 = 3.89% × $45 = <strong class="em-blue">$1.75</strong> → คาด move ≤$1.75 ประมาณ 2 ใน 3 สัปดาห์</p>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ ทำไม √time ไม่ใช่ ÷time ตรงๆ</div>
+      <p>เพราะ price moves เป็น random — บางวันขึ้น บางวันลง หักล้างกันบางส่วน → ผลรวมไม่ได้โตเป็นเส้นตรงตามเวลา แต่โตช้ากว่านั้นตาม √time · นี่คือเหตุผลที่ vol รายวันไม่ใช่แค่ annual ÷ 365</p>
+    </div>
+  </div>
+
+  <!-- Section 5: Lognormal -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Lognormal Distribution · แก้ข้อบกพร่องของ Normal</span>
+    </div>
+
+    <p class="body-text">Normal distribution มีปัญหา: มันสมมาตร → ยอมให้ราคาติดลบได้ ซึ่งเป็นไปไม่ได้สำหรับหุ้น</p>
+
+    <div class="concept-grid">
+      <div class="card">
+        <div class="card-label">ปัญหา Normal</div>
+        <p>หุ้น $50 ขึ้น $75 → $125 ได้ แต่ลง $75 → −$25 เป็นไปไม่ได้</p>
+      </div>
+      <div class="card">
+        <div class="card-label">วิธีแก้ Lognormal</div>
+        <p>วัด vol เป็น <strong>rate of return</strong> (% change) ไม่ใช่ราคาตรงๆ → ราคาไม่มีทางติดลบ, upside ไม่จำกัด</p>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 Black-Scholes ใช้ Lognormal</div>
+      <p>นี่คือเหตุผลที่ Black-Scholes สมมติว่าราคาหุ้น lognormal — distribution จะเบ้ขวาเล็กน้อย (upside ยืดได้ไม่จำกัด, downside จำกัดที่ 0) สะท้อนความจริงของตลาดได้ดีกว่า</p>
+    </div>
+  </div>
+
+  <!-- Section 6: 4 Types of Volatility -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">⭐ 4 ประเภทของ Volatility · แยกให้ออก</span>
+    </div>
+
+    <p class="body-text">Natenberg เตือนว่าแม้แต่ trader มืออาชีพยังสับสน — เมื่อพูดว่า "vol = 25%" อาจหมายถึงคนละอย่าง:</p>
+
+    <div class="voltype-list">
+      <div class="voltype">
+        <div class="voltype-icon vt-future">F</div>
+        <div class="voltype-content">
+          <div class="voltype-name">Future Volatility · สิ่งที่ทุกคนอยากรู้</div>
+          <div class="voltype-desc">vol จริงที่จะเกิดในอนาคต — ถ้ารู้ก็เหมือนรู้ "odds" ที่ถูกต้อง แต่ไม่มีใครรู้อนาคต</div>
+        </div>
+      </div>
+      <div class="voltype">
+        <div class="voltype-icon vt-hist">H</div>
+        <div class="voltype-content">
+          <div class="voltype-name">Historical Volatility · จุดเริ่มต้นที่ดี</div>
+          <div class="voltype-desc">vol ที่เกิดขึ้นจริงในอดีต คำนวณจาก price changes ที่ผ่านมา (10 วัน, 6 เดือน, 5 ปี) — ใช้เป็น baseline เดาอนาคต · เรียกอีกชื่อว่า realized vol</div>
+        </div>
+      </div>
+      <div class="voltype">
+        <div class="voltype-icon vt-forecast">FC</div>
+        <div class="voltype-content">
+          <div class="voltype-name">Forecast Volatility · การพยากรณ์</div>
+          <div class="voltype-desc">vol ที่บริการต่างๆ พยากรณ์ไว้สำหรับอนาคต คล้าย forecast ทิศทางราคา — ยังเป็น inexact science</div>
+        </div>
+      </div>
+      <div class="voltype">
+        <div class="voltype-icon vt-implied">IV</div>
+        <div class="voltype-content">
+          <div class="voltype-name">Implied Volatility ⭐ · vol ที่ตลาดกำลังใช้</div>
+          <div class="voltype-desc">vol ที่ "ฝัง" อยู่ในราคา option ปัจจุบัน — บอกว่าตลาดคาดหวัง vol เท่าไหร่ · นี่คือกุญแจสู่ IV Crush และทุก income strategy</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">Historical vs Implied — ความต่างสำคัญ</div>
+      <p><strong>Historical</strong> = vol ที่เกิดขึ้นแล้วจริง (มองหลัง) · <strong>Implied</strong> = vol ที่ตลาดคาดว่าจะเกิด (มองหน้า) — ฝังในราคา option · เมื่อ IV &gt; HV มาก = option แพง (มักก่อน earnings)</p>
+    </div>
+  </div>
+
+  <!-- Section 7: Implied Volatility Deep Dive -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">⭐ Implied Volatility · รัน Model ย้อนกลับ</span>
+    </div>
+
+    <p class="body-text">IV คือแนวคิดที่ฉลาดมาก — แทนที่จะใส่ vol เพื่อหาราคา เรา <strong>ใส่ราคาตลาดเพื่อหา vol</strong> ที่ทำให้ model ได้ราคานั้นพอดี:</p>
+
+    <div class="iv-diagram">
+      <div class="iv-cols">
+        <div class="iv-col normal">
+          <div class="iv-col-title">ปกติ → หา Theoretical Value</div>
+          <div class="iv-item"><span class="known">✓ Strike (105)</span></div>
+          <div class="iv-item"><span class="known">✓ Time (3 เดือน)</span></div>
+          <div class="iv-item"><span class="known">✓ Price (98.50)</span></div>
+          <div class="iv-item"><span class="known">✓ Interest (8%)</span></div>
+          <div class="iv-item"><span class="known">✓ Volatility (16%)</span></div>
+          <div class="iv-item" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border)"><span class="unknown">? = Theo Value 0.96</span></div>
+        </div>
+        <div class="iv-col reverse">
+          <div class="iv-col-title">ย้อนกลับ → หา Implied Vol</div>
+          <div class="iv-item"><span class="known">✓ Strike (105)</span></div>
+          <div class="iv-item"><span class="known">✓ Time (3 เดือน)</span></div>
+          <div class="iv-item"><span class="known">✓ Price (98.50)</span></div>
+          <div class="iv-item"><span class="known">✓ Interest (8%)</span></div>
+          <div class="iv-item"><span class="known">✓ Option Price (1.34)</span></div>
+          <div class="iv-item" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border)"><span class="unknown">? = Implied Vol 18.5%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">ตัวอย่างจากหนังสือ</div>
+      <p>เราคิดว่า vol = 16% → model บอก option ควรราคา 0.96 · แต่ตลาดขายที่ 1.34 · ถ้า input อื่นถูกหมด แปลว่าตลาดกำลังใช้ vol สูงกว่า → คำนวณย้อนกลับได้ว่า <strong>IV = 18.5%</strong></p>
+    </div>
+
+    <div class="warning">
+      <div class="warning-label">⚑ IV อ่อนไหวต่อ input มาก</div>
+      <p>ถ้าราคา underlying เปลี่ยนจาก 98.50 → 99.25 (แค่ขยับนิดเดียว) IV ที่คำนวณได้เปลี่ยนจาก 18.5% → 17.3% ทันที — ดังนั้นต้องใช้ราคาที่ accurate และ timely เสมอเวลาคำนวณ IV</p>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">💡 IV คือ "ความเห็นของตลาด" ต่อ vol อนาคต</div>
+      <p>IV สูง = ตลาดคาดว่าจะมี move ใหญ่ (เช่น ก่อน earnings) → option แพง · IV ต่ำ = ตลาดคาดว่าเงียบ → option ถูก · การเทรด options ที่ดีคือการเปรียบเทียบ IV กับ vol ที่เราคาดว่าจะเกิดจริง</p>
+    </div>
+  </div>
+
+  <!-- Practical Application -->
+  <div class="practical">
+    <div class="practical-label">⚡ CONNECT TO YOUR TRADING</div>
+    <p><strong>IV Crush อธิบายได้สมบูรณ์แล้ว:</strong> ก่อน earnings ตลาดไม่รู้ผล → IV พุ่ง (คาด move ใหญ่) → option แพงทั้ง call/put · หลังประกาศผล ความไม่แน่นอนหาย → IV ตกฮวบ → option ราคาตกแม้หุ้นขยับตามคาด นี่คือ Episode 1 ของ content series ที่ทำอยู่พอดี</p>
+    <p><strong>IV Rank สำหรับ UUUU:</strong> ที่เคยคุยว่า UUUU มี IV Rank ~5 (ต่ำมาก) แปลว่า IV ตอนนี้ต่ำเทียบกับ 1 ปีที่ผ่านมา → option ถูก → เหมาะกับการ <em class="em-green">ซื้อ</em> (LEAPS) มากกว่าขาย</p>
+    <p><strong>Good vs Dangerous High IV:</strong> ที่เคยแยกกัน — High IV ที่ดีคือ vol สูงแบบ persistent (ขายเก็บ premium ได้เรื่อยๆ) · Dangerous คือ IV สูงเพราะ event เฉพาะ (เช่น TE + KORE acquisition) ที่จะ crush หลังจบ event</p>
+    <p><strong>±1σ สำหรับ CSP strike:</strong> ใช้กฎ 68% เลือก strike ของ CSP — ถ้าขาย put ที่ −1σ จะมีโอกาส ~84% ที่ expire OTM (68% ในกรอบ + 16% ฝั่งบน) เป็นวิธีเลือก strike เชิงสถิติ</p>
+  </div>
+
+  <!-- Key Takeaways -->
+  <div class="section" style="margin-top: 28px;">
+    <div class="section-header">
+      <span class="section-num">✓</span>
+      <span class="section-title">สรุปสิ่งที่ต้องจำจากบทนี้</span>
+    </div>
+    <ul class="checklist">
+      <li>Volatility = 1 Standard Deviation ของ % price change ต่อปี</li>
+      <li>กฎ 68/95/99.7: ±1σ = 68%, ±2σ = 95%, ±3σ = 99.7%</li>
+      <li>Scale: Daily = Annual ÷ 16 · Weekly = Annual ÷ 7.2 (√time rule)</li>
+      <li>Black-Scholes ใช้ Lognormal → ราคาไม่ติดลบ, upside ไม่จำกัด</li>
+      <li>4 ประเภท: <strong>Future</strong> (อยากรู้), <strong>Historical</strong> (อดีตจริง), <strong>Forecast</strong> (พยากรณ์), <strong>Implied</strong> (ตลาดใช้)</li>
+      <li>Implied Vol = รัน model ย้อนกลับ ใส่ราคา → หา vol ที่ตลาดกำลังใช้</li>
+      <li>IV สูง = option แพง (ก่อน event) · IV ต่ำ = option ถูก → นี่คือ IV Crush</li>
+      <li>IV อ่อนไหวต่อ input มาก ต้องใช้ราคา accurate + timely</li>
+    </ul>
+  </div>
+
+  <br>
+  <center>
+  <a href="index.html" class="nav-btn active">หน้าแรก</a>
+  </center>
+  <!-- Footer nav -->
+  <div class="footer-nav">
+    <a href="natenberg_ch3.html" class="nav-btn active"> <- บทที่ 3 </a>
+    <div class="page-indicator">Ch.4 / 20</div>
+    <a href="natenberg_ch5.html" class="nav-btn active">บทที่ 5 →</a>
+  </div>
+
+</div>
+
+<script>
+function calcVol() {
+  var price = parseFloat(document.getElementById('price').value);
+  var vol = parseFloat(document.getElementById('vol').value);
+  document.getElementById('price-v').textContent = '$' + price;
+  document.getElementById('vol-v').textContent = vol + '%';
+  var oneYr = price * (vol/100);
+  var daily = price * (vol/100/16);
+  var weekly = price * (vol/100/7.2);
+  document.getElementById('out-1y').textContent = '±$' + oneYr.toFixed(2);
+  document.getElementById('out-daily').textContent = '±$' + daily.toFixed(2);
+  document.getElementById('out-weekly').textContent = '±$' + weekly.toFixed(2);
+}
+calcVol();
+</script>
+
+</body>
+</html>
